@@ -1,0 +1,5 @@
+{
+  "name": "Apollo DSKY Emulator",
+  "description": "A highly faithful vintage Apollo Guidance Computer (AGC) DSKY interface with working VERB/NOUN logic, authentic status indicators, and 7-segment electroluminescent display aesthetics.",
+  "requestFramePermissions": []
+}
