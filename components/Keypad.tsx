@@ -27,7 +27,7 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
               ${compact ? 'h-10 text-[10px]' : 'h-14 text-xs'}
               ${['VERB', 'NOUN', 'PROG', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP'].includes(key) 
                 ? 'bg-[#3a3a3a] text-gray-100 px-1' 
-                : 'bg-[#444] text-[#a3ffcc] text-lg'
+                : 'bg-[#444] text-[#39ff14] text-lg'
               }
               ${key === 'ENTR' ? 'bg-gray-700' : ''}
               ${key === 'CLR' ? 'text-red-400' : ''}
