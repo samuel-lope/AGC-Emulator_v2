@@ -101,8 +101,8 @@ const DSKY: React.FC = () => {
       {/* Top Section */}
       <div className="flex gap-6 items-stretch flex-grow min-h-0">
         
-        {/* Left: Status Indicators Panel (Alert Lamps) */}
-        <div className="w-[30%] flex flex-col min-h-0">
+        {/* Left: Status Indicators Panel (Alert Lamps) - Increased width for 3 columns */}
+        <div className="w-[40%] flex flex-col min-h-0">
           <StatusPanel status={displayStatus} />
         </div>
 
