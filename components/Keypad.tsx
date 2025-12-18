@@ -10,7 +10,7 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
   const keys = [
     ['VERB', '7', '8', '9', 'F1'],
     ['NOUN', '4', '5', '6', 'F2'],
-    ['PROG', '1', '2', '3', 'F3'],
+    ['PROC', '1', '2', '3', 'F3'],
     ['CLR', '0', '+', '-', 'F4'],
     ['KEY REL', 'ENTR', 'RSET', 'LAMP', 'F5']
   ];
@@ -25,7 +25,7 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
             className={`
               dsky-button rounded flex items-center justify-center font-bold shadow-md active:shadow-sm transition-all
               ${compact ? 'h-10 text-[10px]' : 'h-14 text-xs'}
-              ${['VERB', 'NOUN', 'PROG', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key) 
+              ${['VERB', 'NOUN', 'PROC', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key) 
                 ? 'bg-[#3a3a3a] text-gray-100 px-1' 
                 : 'bg-[#444] text-[#39ff14] text-lg'
               }

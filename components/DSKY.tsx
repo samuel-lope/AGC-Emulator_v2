@@ -5,7 +5,7 @@ import StatusPanel from './StatusPanel';
 import Keypad from './Keypad';
 import { INITIAL_STATE, FUNCTION_KEYS_MAP } from '../constants';
 import { DSKYState, DSKYMode } from '../types';
-import { executeCommand } from '../utils/commands';
+import { executeCommand, executeProgram } from '../utils/commands';
 
 const DSKY: React.FC = () => {
   const [state, setState] = useState<DSKYState>(INITIAL_STATE);
@@ -39,12 +39,12 @@ const DSKY: React.FC = () => {
 
     if (key === 'LAMP') {
       setIsLampTest(true);
-      setTimeout(() => setIsLampTest(false), 4000);
+      setTimeout(() => setIsLampTest(false), 3000);
       return;
     }
 
     if (key === 'RSET') {
-      setState(prev => ({ ...prev, status: { ...prev.status, oprErr: false } }));
+      setState(prev => ({ ...prev, status: { ...prev.status, oprErr: false, prog: false } }));
       // Se estiver em modo de teste total, reseta para o estado inicial
       if (state.r1 === 'AAAAA' || state.status.restart === true) setState(INITIAL_STATE);
       return;
@@ -62,9 +62,11 @@ const DSKY: React.FC = () => {
       return;
     }
 
-    if (key === 'PROG') {
-      setMode(DSKYMode.ENTERING_PROG);
-      setInputBuffer('');
+    if (key === 'PROC') {
+      // A tecla PROC (Proceed) executa o programa que está no display PROG
+      const result = executeProgram(state.prog, state);
+      setState(prev => ({ ...prev, ...result }));
+      setMode(DSKYMode.IDLE);
       return;
     }
 
@@ -78,8 +80,6 @@ const DSKY: React.FC = () => {
         setState(prev => ({ ...prev, verb: inputBuffer.padStart(2, '0') }));
       } else if (mode === DSKYMode.ENTERING_NOUN) {
         setState(prev => ({ ...prev, noun: inputBuffer.padStart(2, '0') }));
-      } else if (mode === DSKYMode.ENTERING_PROG) {
-        setState(prev => ({ ...prev, prog: inputBuffer.padStart(2, '0') }));
       } else {
         const result = executeCommand(state.verb, state.noun, state);
         setState(prev => ({ ...prev, ...result }));
@@ -97,8 +97,6 @@ const DSKY: React.FC = () => {
         setState(prev => ({ ...prev, verb: newBuf.slice(-2).padStart(2, '0') }));
       } else if (mode === DSKYMode.ENTERING_NOUN) {
         setState(prev => ({ ...prev, noun: newBuf.slice(-2).padStart(2, '0') }));
-      } else if (mode === DSKYMode.ENTERING_PROG) {
-        setState(prev => ({ ...prev, prog: newBuf.slice(-2).padStart(2, '0') }));
       }
     }
   };
@@ -129,7 +127,7 @@ const DSKY: React.FC = () => {
               label="PROG" 
               value={isLampTest ? '88' : state.prog} 
               length={2} 
-              glow={(mode !== DSKYMode.ENTERING_PROG || !isFlashing) || isLampTest} 
+              glow={true} 
               size="md"
             />
             <Display 

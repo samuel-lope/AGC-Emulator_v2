@@ -24,7 +24,8 @@ const MissionControl: React.FC = () => {
             <ul className="list-disc list-inside space-y-1">
               <li>VERB 35 ENTR: Lamp Test</li>
               <li>VERB 16 NOUN 36 ENTR: Real-time Clock</li>
-              <li>VERB 37 ENTR: Request Program Change</li>
+              <li>VERB 37 NOUN 11 ENTR: Set Program 11</li>
+              <li>Then press <span className="text-amber-500 font-bold">PROC</span> to run the selected program</li>
             </ul>
           </div>
         </section>
