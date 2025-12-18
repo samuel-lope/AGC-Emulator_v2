@@ -27,7 +27,7 @@ export const INITIAL_STATE = {
   status: {
     uplinkActy: false,
     noAtt: false,
-    stby: false,
+    stby: true,
     keyRel: false,
     oprErr: false,
     temp: false,
@@ -44,7 +44,8 @@ export const INITIAL_STATE = {
 export const FUNCTION_KEYS_MAP: Record<string, any> = {
   'F1': {
     status: { restart: true },
-    r1: '08050',
+    r1: '88888',
+    r2: 'AAAAA',
     r1Sign: '+'
   },
   'F2': {
@@ -58,10 +59,10 @@ export const FUNCTION_KEYS_MAP: Record<string, any> = {
     r3Sign: '+'
   },
   'F4': {
-    status: { restart: true, prog: true, oprErr: true, temp: true },
-    prog: '99',
-    verb: '99',
-    noun: '99'
+    status: { restart: true },
+    prog: '00',
+    verb: '16',
+    noun: '36'
   },
   'F5': {
     status: { alt: true, vel: true, tracker: true, oprErr: true, temp: true },

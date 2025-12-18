@@ -45,7 +45,8 @@ const DSKY: React.FC = () => {
 
     if (key === 'RSET') {
       setState(prev => ({ ...prev, status: { ...prev.status, oprErr: false } }));
-      if (state.status.restart === true) setState(INITIAL_STATE);
+      // Se estiver em modo de teste total, reseta para o estado inicial
+      if (state.r1 === 'AAAAA' || state.status.restart === true) setState(INITIAL_STATE);
       return;
     }
 
@@ -103,7 +104,7 @@ const DSKY: React.FC = () => {
   };
 
   // Determine effective display values based on lamp test state
-  const displayValue = (val: string, length: number) => isLampTest ? '8'.repeat(length) : val;
+  const displayValue = (val: string, length: number) => isLampTest ? 'AAAAA' : val;
   const displaySign = (sign: '+' | '-' | '') => isLampTest ? '+' : sign;
   const displayStatus = isLampTest 
     ? Object.keys(state.status).reduce((acc, k) => ({ ...acc, [k]: true }), {} as typeof state.status)
@@ -126,21 +127,21 @@ const DSKY: React.FC = () => {
           <div className="flex-1 flex flex-col justify-between items-center py-2 border-r border-[#222]">
             <Display 
               label="PROG" 
-              value={displayValue(state.prog, 2)} 
+              value={isLampTest ? '88' : state.prog} 
               length={2} 
               glow={(mode !== DSKYMode.ENTERING_PROG || !isFlashing) || isLampTest} 
               size="md"
             />
             <Display 
               label="VERB" 
-              value={displayValue(state.verb, 2)} 
+              value={isLampTest ? '88' : state.verb} 
               length={2} 
               glow={(mode !== DSKYMode.ENTERING_VERB || !isFlashing) || isLampTest} 
               size="md"
             />
             <Display 
               label="NOUN" 
-              value={displayValue(state.noun, 2)} 
+              value={isLampTest ? '88' : state.noun} 
               length={2} 
               glow={(mode !== DSKYMode.ENTERING_NOUN || !isFlashing) || isLampTest} 
               size="md"

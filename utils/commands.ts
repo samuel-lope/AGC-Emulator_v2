@@ -25,7 +25,7 @@ export const executeCommand = (verb: string, noun: string, state: DSKYState): Pa
   if (verb === '35') { // Lamp Test
     return {
       status: Object.keys(state.status).reduce((acc, key) => ({ ...acc, [key]: true }), {} as DSKYState['status']),
-      r1: '88888', r2: '88888', r3: '88888'
+      r1: 'AAAAA', r2: 'AAAAA', r3: 'AAAAA'
     };
   }
 

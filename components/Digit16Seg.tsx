@@ -20,14 +20,14 @@ const SEGMENT_MAP: Record<string, string[]> = {
   '9': ['a1', 'a2', 'f', 'b', 'g1', 'g2', 'c', 'd1', 'd2'],
   '+': ['g1', 'g2', 'i', 'l'],
   '-': ['g1', 'g2'],
-  '88': ['a1', 'a2', 'f', 'b', 'g1', 'g2', 'e', 'c', 'd1', 'd2', 'h', 'i', 'j', 'k', 'l', 'm'], // All segments for test
+  'AAAAA': ['a1', 'a2', 'f', 'b', 'g1', 'g2', 'e', 'c', 'd1', 'd2', 'h', 'i', 'j', 'k', 'l', 'm'], // All segments for test
 };
 
 const Digit16Seg: React.FC<Digit16SegProps> = ({ char, active = true, className = "" }) => {
   const activeSegments = SEGMENT_MAP[char] || [];
 
   const getStyle = (segId: string) => {
-    const isOn = active && (activeSegments.includes(segId) || char === '88');
+    const isOn = active && (activeSegments.includes(segId) || char === 'AAAAA');
     return {
       fill: isOn ? '#39ff14' : '#1a2e1a',
       filter: isOn ? 'drop-shadow(0 0 4px rgba(57, 255, 20, 0.8)) blur(0.2px)' : 'none',

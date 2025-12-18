@@ -37,7 +37,7 @@ const Display: React.FC<DisplayProps> = ({ value, length, sign, label, glow = tr
           {paddedValue.split('').map((char, idx) => (
             <div key={idx} className={sizeClasses.digitHeight}>
               <Digit16Seg 
-                char={glow && char === '8' && value === '88888' ? '88' : char} 
+                char={glow && value === 'AAAAA' ? 'AAAAA' : char} 
                 active={glow} 
                 className={sizeClasses.digitHeight} 
               />
