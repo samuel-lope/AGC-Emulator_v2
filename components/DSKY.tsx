@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Display from './Display';
 import StatusPanel from './StatusPanel';
 import Keypad from './Keypad';
-import { INITIAL_STATE } from '../constants';
+import { INITIAL_STATE, FUNCTION_KEYS_MAP } from '../constants';
 import { DSKYState, DSKYMode } from '../types';
 import { executeCommand } from '../utils/commands';
 
@@ -24,6 +24,19 @@ const DSKY: React.FC = () => {
   }, [mode]);
 
   const handleKeyPress = (key: string) => {
+    // Lógica para as novas teclas F1-F5
+    if (key.startsWith('F')) {
+      const config = FUNCTION_KEYS_MAP[key];
+      if (config) {
+        setState(prev => ({
+          ...prev,
+          ...config,
+          status: config.status ? { ...prev.status, ...config.status } : prev.status
+        }));
+      }
+      return;
+    }
+
     if (key === 'LAMP') {
       setIsLampTest(true);
       setTimeout(() => setIsLampTest(false), 4000);
@@ -32,7 +45,7 @@ const DSKY: React.FC = () => {
 
     if (key === 'RSET') {
       setState(prev => ({ ...prev, status: { ...prev.status, oprErr: false } }));
-      if (state.r1 === '88888') setState(INITIAL_STATE);
+      if (state.status.restart === true) setState(INITIAL_STATE);
       return;
     }
 
@@ -97,11 +110,11 @@ const DSKY: React.FC = () => {
     : state.status;
 
   return (
-    <div className="dsky-panel w-full max-w-[900px] h-full max-h-[calc(100vh-60px)] p-6 rounded-xl border-4 border-[#333] flex flex-col gap-4 select-none shadow-[0_40px_100px_rgba(0,0,0,0.9)] overflow-hidden">
+    <div className="dsky-panel w-full max-w-[950px] h-full max-h-[calc(100vh-60px)] p-6 rounded-xl border-4 border-[#333] flex flex-col gap-4 select-none shadow-[0_40px_100px_rgba(0,0,0,0.9)] overflow-hidden">
       {/* Top Section */}
       <div className="flex gap-6 items-stretch flex-grow min-h-0">
         
-        {/* Left: Status Indicators Panel (Alert Lamps) - Increased width for 3 columns */}
+        {/* Left: Status Indicators Panel (Alert Lamps) */}
         <div className="w-[40%] flex flex-col min-h-0">
           <StatusPanel status={displayStatus} />
         </div>

@@ -39,3 +39,37 @@ export const INITIAL_STATE = {
     vel: false,
   }
 };
+
+// Configuração das teclas de função customizadas
+export const FUNCTION_KEYS_MAP: Record<string, any> = {
+  'F1': {
+    status: { restart: true },
+    r1: '08050',
+    r1Sign: '+'
+  },
+  'F2': {
+    status: { uplinkActy: true, stby: true, oprErr: true, temp: true },
+    r2: '00900',
+    r2Sign: '-'
+  },
+  'F3': {
+    status: { gimbalLock: true, noAtt: true, oprErr: true, temp: true },
+    r3: '12345',
+    r3Sign: '+'
+  },
+  'F4': {
+    status: { restart: true, prog: true, oprErr: true, temp: true },
+    prog: '99',
+    verb: '99',
+    noun: '99'
+  },
+  'F5': {
+    status: { alt: true, vel: true, tracker: true, oprErr: true, temp: true },
+    r1: '00408',
+    r2: '00200',
+    r3: '00100',
+    r1Sign: '+',
+    r2Sign: '+',
+    r3Sign: '+'
+  }
+};

@@ -39,7 +39,8 @@ export const executeCommand = (verb: string, noun: string, state: DSKYState): Pa
   }
 
   if (verb === '37') { // Change Program
-    return { prog: '00', r1: '00000' };
+    // Agora o programa assume o valor do Noun inserido
+    return { prog: noun, r1: '00000' };
   }
 
   return { status: { ...state.status, oprErr: true } };
