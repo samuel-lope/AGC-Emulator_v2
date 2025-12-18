@@ -44,8 +44,7 @@ export const INITIAL_STATE = {
 export const FUNCTION_KEYS_MAP: Record<string, any> = {
   'F1': {
     status: { restart: true },
-    r1: '88888',
-    r2: 'AAAAA',
+    r1: '0AB37',
     r1Sign: '+'
   },
   'F2': {
