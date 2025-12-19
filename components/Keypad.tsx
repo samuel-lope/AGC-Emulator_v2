@@ -23,16 +23,17 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
             key={i}
             onClick={() => onKeyPress(key)}
             className={`
-              dsky-button rounded flex items-center justify-center font-bold shadow-md active:shadow-sm transition-all
+              dsky-button rounded flex items-center justify-center font-bold shadow-md active:shadow-sm transition-all duration-200
+              hover:brightness-125 hover:border-gray-500
               ${compact ? 'h-10 text-[10px]' : 'h-14 text-xs'}
               ${['VERB', 'NOUN', 'PROC', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key) 
-                ? 'bg-[#3a3a3a] text-gray-100 px-1' 
-                : 'bg-[#444] text-[#39ff14] text-lg'
+                ? 'bg-[#3a3a3a] text-gray-100 px-1 hover:shadow-[0_0_12px_rgba(255,255,255,0.08)]' 
+                : 'bg-[#444] text-[#39ff14] text-lg hover:shadow-[0_0_12px_rgba(57,255,20,0.2)]'
               }
-              ${key === 'ENTR' ? 'bg-gray-700' : ''}
-              ${key === 'CLR' ? 'text-red-400' : ''}
-              ${key === 'LAMP' ? 'text-amber-400 border-amber-900/50' : ''}
-              ${key.startsWith('F') ? 'text-cyan-400 border-cyan-900/30' : ''}
+              ${key === 'ENTR' ? 'bg-gray-700 hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]' : ''}
+              ${key === 'CLR' ? 'text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.2)]' : ''}
+              ${key === 'LAMP' ? 'text-amber-400 border-amber-900/50 hover:shadow-[0_0_12px_rgba(251,191,36,0.2)]' : ''}
+              ${key.startsWith('F') ? 'text-cyan-400 border-cyan-900/30 hover:shadow-[0_0_12px_rgba(34,211,238,0.2)]' : ''}
               ${['+', '-'].includes(key) ? 'text-xl' : ''}
             `}
           >
