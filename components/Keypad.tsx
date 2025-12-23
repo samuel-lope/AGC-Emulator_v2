@@ -15,29 +15,36 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
     ['KEY REL', 'ENTR', 'RSET', 'LAMP', 'F5']
   ];
 
+  const isFunctional = (key: string) => 
+    ['VERB', 'NOUN', 'PROC', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key);
+
+  const getLabelColor = (key: string) => {
+    if (isFunctional(key)) return 'text-[#d4af37]'; // Gold/Amber para funções estilo HP 12C
+    if (['+', '-'].includes(key)) return 'text-[#39ff14]'; // Verde AGC para sinais
+    return 'text-[#f0f0f0]'; // Branco para números
+  };
+
   return (
-    <div className={`grid grid-cols-5 gap-2 ${compact ? 'p-2' : 'p-4'} bg-[#222] rounded-lg border-b-4 border-r-4 border-[#111]`}>
+    <div className={`grid grid-cols-5 gap-3 ${compact ? 'p-2' : 'p-4'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222]`}>
       {keys.flat().map((key, i) => (
         key ? (
           <button
             key={i}
             onClick={() => onKeyPress(key)}
             className={`
-              dsky-button rounded flex items-center justify-center font-bold shadow-md active:shadow-sm transition-all duration-200
-              hover:brightness-125 hover:border-gray-500
-              ${compact ? 'h-10 text-[10px]' : 'h-14 text-xs'}
-              ${['VERB', 'NOUN', 'PROC', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key) 
-                ? 'bg-[#3a3a3a] text-gray-100 px-1 hover:shadow-[0_0_12px_rgba(255,255,255,0.08)]' 
-                : 'bg-[#444] text-[#39ff14] text-lg hover:shadow-[0_0_12px_rgba(57,255,20,0.2)]'
-              }
-              ${key === 'ENTR' ? 'bg-gray-700 hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]' : ''}
-              ${key === 'CLR' ? 'text-red-400 hover:shadow-[0_0_12px_rgba(239,68,68,0.2)]' : ''}
-              ${key === 'LAMP' ? 'text-amber-400 border-amber-900/50 hover:shadow-[0_0_12px_rgba(251,191,36,0.2)]' : ''}
-              ${key.startsWith('F') ? 'text-cyan-400 border-cyan-900/30 hover:shadow-[0_0_12px_rgba(34,211,238,0.2)]' : ''}
-              ${['+', '-'].includes(key) ? 'text-xl' : ''}
+              dsky-button rounded-sm flex flex-col items-center justify-center font-mono font-bold
+              ${compact ? 'h-10 text-[9px]' : 'h-14 text-[11px]'}
+              ${getLabelColor(key)}
+              cursor-pointer select-none
             `}
           >
-            {key}
+            <span className={`${!isFunctional(key) ? 'text-lg' : ''} leading-tight`}>
+              {key}
+            </span>
+            {/* Legend marker (ponto dourado para teclas funcionais, simulando HP) */}
+            {isFunctional(key) && (
+              <div className="w-1 h-1 bg-[#d4af37]/30 rounded-full mt-1"></div>
+            )}
           </button>
         ) : <div key={i} />
       ))}

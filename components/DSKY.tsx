@@ -7,7 +7,11 @@ import { INITIAL_STATE, FUNCTION_KEYS_MAP } from '../constants';
 import { DSKYState, DSKYMode } from '../types';
 import { executeCommand, executeProgram } from '../utils/commands';
 
-const DSKY: React.FC = () => {
+interface DSKYProps {
+  onSendSerial?: (data: string) => void;
+}
+
+const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
   const [state, setState] = useState<DSKYState>(INITIAL_STATE);
   const [mode, setMode] = useState<DSKYMode>(DSKYMode.IDLE);
   const [inputBuffer, setInputBuffer] = useState<string>('');
@@ -62,8 +66,19 @@ const DSKY: React.FC = () => {
 
     if (key === 'PROC') {
       const result = executeProgram(state.prog, state);
-      setState(prev => ({ ...prev, ...result }));
+      const newState = { ...state, ...result };
+      setState(newState);
       setMode(DSKYMode.IDLE);
+
+      // Serial Transmission Trigger
+      if (onSendSerial) {
+        const payload = JSON.stringify({
+          R1: `${newState.r1Sign}${newState.r1}`,
+          R2: `${newState.r2Sign}${newState.r2}`,
+          R3: `${newState.r3Sign}${newState.r3}`
+        });
+        onSendSerial(payload);
+      }
       return;
     }
 
@@ -104,6 +119,9 @@ const DSKY: React.FC = () => {
     ? Object.keys(state.status).reduce((acc, k) => ({ ...acc, [k]: true }), {} as typeof state.status)
     : state.status;
 
+  const verbGlow = isLampTest || (mode === DSKYMode.ENTERING_VERB ? isFlashing : true);
+  const nounGlow = isLampTest || (mode === DSKYMode.ENTERING_NOUN ? isFlashing : true);
+
   return (
     <div className="dsky-panel w-full h-full p-6 rounded-xl border-4 border-[#333] flex flex-col gap-4 select-none shadow-[inset_0_2px_20px_rgba(255,255,255,0.05)] overflow-hidden">
       {/* Top Section */}
@@ -130,14 +148,14 @@ const DSKY: React.FC = () => {
               label="VERB" 
               value={isLampTest ? '88' : state.verb} 
               length={2} 
-              glow={(mode === DSKYMode.ENTERING_VERB && isFlashing) || isLampTest || mode === DSKYMode.IDLE} 
+              glow={verbGlow} 
               size="md"
             />
             <Display 
               label="NOUN" 
               value={isLampTest ? '88' : state.noun} 
               length={2} 
-              glow={(mode === DSKYMode.ENTERING_NOUN && isFlashing) || isLampTest || mode === DSKYMode.IDLE} 
+              glow={nounGlow} 
               size="md"
             />
           </div>
