@@ -33,6 +33,7 @@ const MissionControl: React.FC<MissionControlProps> = ({ onConnectSerial, isSeri
       </div>
 
       <div className="space-y-5">
+        
         <section>
           <h4 className="text-gray-400 text-[10px] uppercase mb-2 border-l-2 border-amber-500 pl-2">System Operations</h4>
           <p className="text-gray-500 text-[11px] leading-relaxed mb-3">

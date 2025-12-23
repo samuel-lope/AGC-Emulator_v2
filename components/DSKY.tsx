@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Display from './Display';
 import StatusPanel from './StatusPanel';
 import Keypad from './Keypad';
@@ -11,7 +11,11 @@ interface DSKYProps {
   onSendSerial?: (data: string) => void;
 }
 
-const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
+export interface DSKYHandle {
+  triggerKey: (key: string) => void;
+}
+
+const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial }, ref) => {
   const [state, setState] = useState<DSKYState>(INITIAL_STATE);
   const [mode, setMode] = useState<DSKYMode>(DSKYMode.IDLE);
   const [inputBuffer, setInputBuffer] = useState<string>('');
@@ -28,6 +32,9 @@ const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
   }, [mode]);
 
   const handleKeyPress = (key: string) => {
+    // Efeito visual de feedback no console para debug
+    console.log(`DSKY Internal: Key Pressed -> ${key}`);
+
     if (key.startsWith('F')) {
       const config = FUNCTION_KEYS_MAP[key];
       if (config) {
@@ -75,7 +82,8 @@ const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
         const payload = JSON.stringify({
           R1: `${newState.r1Sign}${newState.r1}`,
           R2: `${newState.r2Sign}${newState.r2}`,
-          R3: `${newState.r3Sign}${newState.r3}`
+          R3: `${newState.r3Sign}${newState.r3}`,
+          STATUS: newState.status
         });
         onSendSerial(payload);
       }
@@ -111,7 +119,18 @@ const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
         setState(prev => ({ ...prev, noun: newBuf.slice(-2).padStart(2, '0') }));
       }
     }
+
+    if (key === '+' || key === '-') {
+      // Lógica simples para sinais, se necessário no futuro
+    }
   };
+
+  // Expõe o método para o componente pai
+  useImperativeHandle(ref, () => ({
+    triggerKey: (key: string) => {
+      handleKeyPress(key);
+    }
+  }));
 
   const displayValue = (val: string, length: number) => isLampTest ? 'AAAAA' : val;
   const displaySign = (sign: '+' | '-' | '') => isLampTest ? '+' : sign;
@@ -175,6 +194,8 @@ const DSKY: React.FC<DSKYProps> = ({ onSendSerial }) => {
       </div>
     </div>
   );
-};
+});
+
+DSKY.displayName = 'DSKY';
 
 export default DSKY;

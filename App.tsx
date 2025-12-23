@@ -1,13 +1,15 @@
 
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import DSKY from './components/DSKY';
+import React, { useState, useLayoutEffect, useRef } from 'react';
+import DSKY, { DSKYHandle } from './components/DSKY';
 import MissionControl from './components/MissionControl';
 
 const App: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [isSerialConnected, setIsSerialConnected] = useState(false);
-  const [isStartup, setIsStartup] = useState(true); // Estado para controlar a tela de inicialização
+  const [isStartup, setIsStartup] = useState(true);
+  
   const serialWriterRef = useRef<WritableStreamDefaultWriter | null>(null);
+  const dskyRef = useRef<DSKYHandle>(null);
 
   const BASE_WIDTH = 1200;
   const BASE_HEIGHT = 620;
@@ -28,33 +30,31 @@ const App: React.FC = () => {
 
   const connectSerial = async () => {
     if (!('serial' in navigator)) {
-      console.warn('Web Serial API not supported in this browser.');
+      console.warn('Web Serial API not supported.');
       return;
     }
 
     try {
-      // @ts-ignore - Web Serial types might not be available in all TS configs
+      // @ts-ignore
       const port = await navigator.serial.requestPort();
       await port.open({ baudRate: 9600 });
       
+      // Apenas configura o Writer (Envio de dados)
       const textEncoder = new TextEncoderStream();
-      const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+      textEncoder.readable.pipeTo(port.writable);
       const writer = textEncoder.writable.getWriter();
-      
       serialWriterRef.current = writer;
+
+      // Não configuramos Reader (Recepção) conforme solicitado
       setIsSerialConnected(true);
+
     } catch (err: any) {
-      if (err.name === 'NotFoundError' || err.message?.includes('No port selected')) {
-        console.log('Serial connection cancelled by user.');
-      } else {
-        console.error('Error connecting to serial:', err);
-      }
+      console.log('Serial connect error/cancel:', err);
       setIsSerialConnected(false);
     }
   };
 
   const handleSystemStart = async () => {
-    // Tenta conectar a serial. Se o usuário cancelar ou der erro, o app abre mesmo assim.
     await connectSerial();
     setIsStartup(false);
   };
@@ -64,7 +64,7 @@ const App: React.FC = () => {
       try {
         await serialWriterRef.current.write(data + "\n");
       } catch (err) {
-        console.error('Error writing to serial:', err);
+        console.error('Serial write error:', err);
       }
     }
   };
@@ -111,20 +111,20 @@ const App: React.FC = () => {
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
           transition: 'transform 0.2s ease-out',
-          opacity: isStartup ? 0 : 1, // Esconde a interface principal enquanto inicia
+          opacity: isStartup ? 0 : 1, 
           filter: isStartup ? 'blur(10px)' : 'none'
         }}
         className="flex flex-row gap-6 p-6 bg-[#1a1a1a] rounded-2xl border-2 border-[#333] shadow-[0_0_100px_rgba(0,0,0,1)] relative overflow-hidden transition-all duration-700"
       >
-        {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent opacity-20"></div>
         
-        {/* Left Side: The DSKY Main Unit */}
         <div className="w-[720px] shrink-0">
-          <DSKY onSendSerial={sendSerialData} />
+          <DSKY 
+            ref={dskyRef}
+            onSendSerial={sendSerialData} 
+          />
         </div>
 
-        {/* Right Side: Mission Control Docs & Logs */}
         <div className="flex-1 flex flex-col gap-4">
           <header className="shrink-0 flex justify-between items-end mb-1">
             <div>
