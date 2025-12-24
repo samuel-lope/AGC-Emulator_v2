@@ -32,6 +32,18 @@ export interface DSKYState {
   };
 }
 
+export interface FunctionKeyConfig {
+  key: string; // 'F1', 'F2', etc
+  label: string; // Descrição curta para a UI
+  verb: string;
+  noun: string;
+  prog: string;
+  r1: string; r1Sign: '+' | '-' | '';
+  r2: string; r2Sign: '+' | '-' | '';
+  r3: string; r3Sign: '+' | '-' | '';
+  status: DSKYState['status'];
+}
+
 export interface VerbNounCommand {
   verb: string;
   noun?: string;

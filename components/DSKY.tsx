@@ -3,19 +3,20 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'rea
 import Display from './Display';
 import StatusPanel from './StatusPanel';
 import Keypad from './Keypad';
-import { INITIAL_STATE, FUNCTION_KEYS_MAP } from '../constants';
-import { DSKYState, DSKYMode } from '../types';
+import { INITIAL_STATE } from '../constants';
+import { DSKYState, DSKYMode, FunctionKeyConfig } from '../types';
 import { executeCommand, executeProgram } from '../utils/commands';
 
 interface DSKYProps {
   onSendSerial?: (data: string) => void;
+  functionKeys: Record<string, FunctionKeyConfig>;
 }
 
 export interface DSKYHandle {
   triggerKey: (key: string) => void;
 }
 
-const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial }, ref) => {
+const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, ref) => {
   const [state, setState] = useState<DSKYState>(INITIAL_STATE);
   const [mode, setMode] = useState<DSKYMode>(DSKYMode.IDLE);
   const [inputBuffer, setInputBuffer] = useState<string>('');
@@ -36,11 +37,19 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial }, ref) => {
     console.log(`DSKY Internal: Key Pressed -> ${key}`);
 
     if (key.startsWith('F')) {
-      const config = FUNCTION_KEYS_MAP[key];
+      const config = functionKeys[key];
       if (config) {
         setState(prev => ({
           ...prev,
-          ...config,
+          verb: config.verb || prev.verb,
+          noun: config.noun || prev.noun,
+          prog: config.prog || prev.prog,
+          r1: config.r1 || prev.r1,
+          r1Sign: config.r1Sign || prev.r1Sign,
+          r2: config.r2 || prev.r2,
+          r2Sign: config.r2Sign || prev.r2Sign,
+          r3: config.r3 || prev.r3,
+          r3Sign: config.r3Sign || prev.r3Sign,
           status: config.status ? { ...prev.status, ...config.status } : prev.status
         }));
       }

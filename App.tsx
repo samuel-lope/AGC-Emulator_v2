@@ -1,13 +1,26 @@
 
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import DSKY, { DSKYHandle } from './components/DSKY';
 import MissionControl from './components/MissionControl';
+import { DEFAULT_FUNCTION_KEYS } from './constants';
+import { FunctionKeyConfig } from './types';
 
 const App: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [isSerialConnected, setIsSerialConnected] = useState(false);
   const [isStartup, setIsStartup] = useState(true);
   
+  // Estado para armazenar configurações das teclas F1-F5
+  const [functionKeys, setFunctionKeys] = useState<Record<string, FunctionKeyConfig>>(() => {
+    try {
+      const saved = localStorage.getItem('agc_function_keys');
+      return saved ? JSON.parse(saved) : DEFAULT_FUNCTION_KEYS;
+    } catch (e) {
+      console.error("Error loading keys", e);
+      return DEFAULT_FUNCTION_KEYS;
+    }
+  });
+
   const serialWriterRef = useRef<WritableStreamDefaultWriter | null>(null);
   const dskyRef = useRef<DSKYHandle>(null);
 
@@ -28,6 +41,11 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleUpdateFunctionKeys = (newKeys: Record<string, FunctionKeyConfig>) => {
+    setFunctionKeys(newKeys);
+    localStorage.setItem('agc_function_keys', JSON.stringify(newKeys));
+  };
+
   const connectSerial = async () => {
     if (!('serial' in navigator)) {
       console.warn('Web Serial API not supported.');
@@ -39,13 +57,11 @@ const App: React.FC = () => {
       const port = await navigator.serial.requestPort();
       await port.open({ baudRate: 9600 });
       
-      // Apenas configura o Writer (Envio de dados)
       const textEncoder = new TextEncoderStream();
       textEncoder.readable.pipeTo(port.writable);
       const writer = textEncoder.writable.getWriter();
       serialWriterRef.current = writer;
 
-      // Não configuramos Reader (Recepção) conforme solicitado
       setIsSerialConnected(true);
 
     } catch (err: any) {
@@ -122,6 +138,7 @@ const App: React.FC = () => {
           <DSKY 
             ref={dskyRef}
             onSendSerial={sendSerialData} 
+            functionKeys={functionKeys}
           />
         </div>
 
@@ -136,6 +153,8 @@ const App: React.FC = () => {
           <MissionControl 
             onConnectSerial={connectSerial} 
             isSerialConnected={isSerialConnected} 
+            functionKeys={functionKeys}
+            onUpdateFunctionKeys={handleUpdateFunctionKeys}
           />
 
           <footer className="text-gray-700 font-mono text-[9px] uppercase tracking-wider opacity-40 mt-auto">
