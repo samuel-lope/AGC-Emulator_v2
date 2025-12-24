@@ -65,11 +65,11 @@ export const FUNCTION_KEYS_MAP: Record<string, any> = {
   },
   'F5': {
     status: { alt: true, vel: true, tracker: true, oprErr: true, temp: true },
-    r1: '00408',
-    r2: '00200',
-    r3: '00100',
-    r1Sign: '+',
-    r2Sign: '+',
-    r3Sign: '+'
+    r1: 'A8944',
+    r2: 'F0200',
+    r3: 'E010C',
+    r1Sign: '-',
+    r2Sign: '-',
+    r3Sign: '-'
   }
 };
