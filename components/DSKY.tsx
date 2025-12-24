@@ -39,19 +39,34 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     if (key.startsWith('F')) {
       const config = functionKeys[key];
       if (config) {
-        setState(prev => ({
-          ...prev,
-          verb: config.verb || prev.verb,
-          noun: config.noun || prev.noun,
-          prog: config.prog || prev.prog,
-          r1: config.r1 || prev.r1,
-          r1Sign: config.r1Sign || prev.r1Sign,
-          r2: config.r2 || prev.r2,
-          r2Sign: config.r2Sign || prev.r2Sign,
-          r3: config.r3 || prev.r3,
-          r3Sign: config.r3Sign || prev.r3Sign,
-          status: config.status ? { ...prev.status, ...config.status } : prev.status
-        }));
+        // Calcula o novo estado combinando o atual com as configurações da tecla F
+        const newState = {
+          ...state,
+          verb: config.verb || state.verb,
+          noun: config.noun || state.noun,
+          prog: config.prog || state.prog,
+          r1: config.r1 || state.r1,
+          r1Sign: config.r1Sign || state.r1Sign,
+          r2: config.r2 || state.r2,
+          r2Sign: config.r2Sign || state.r2Sign,
+          r3: config.r3 || state.r3,
+          r3Sign: config.r3Sign || state.r3Sign,
+          status: config.status ? { ...state.status, ...config.status } : state.status
+        };
+
+        // Atualiza a UI
+        setState(newState);
+
+        // Envia dados via Serial (JSON)
+        if (onSendSerial) {
+          const payload = JSON.stringify({
+            R1: `${newState.r1Sign}${newState.r1}`,
+            R2: `${newState.r2Sign}${newState.r2}`,
+            R3: `${newState.r3Sign}${newState.r3}`,
+            STATUS: newState.status
+          });
+          onSendSerial(payload);
+        }
       }
       return;
     }

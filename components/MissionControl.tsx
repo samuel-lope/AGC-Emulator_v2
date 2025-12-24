@@ -98,7 +98,7 @@ const MissionControl: React.FC<MissionControlProps> = ({
               <div className="bg-[#111] p-3 rounded text-[10px] text-amber-200/60 border border-white/5">
                 <span className="block mb-1 text-amber-600 font-bold uppercase">Function Keys (Macros):</span>
                 <ul className="list-none space-y-1">
-                  {Object.values(functionKeys).map((fn) => (
+                  {Object.values(functionKeys).map((fn: FunctionKeyConfig) => (
                     <li key={fn.key} className="flex justify-between border-b border-white/5 pb-0.5">
                       <span className="text-amber-500 font-bold">{fn.key}</span>
                       <span>{fn.label || 'Empty'}</span>
