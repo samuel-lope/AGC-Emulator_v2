@@ -31,12 +31,12 @@ const MissionControl: React.FC<MissionControlProps> = ({
   };
 
   // Helper para atualizar status flags
-  const handleStatusChange = (statusKey: string) => {
+  const handleStatusChange = (statusId: number) => {
     if (!onUpdateFunctionKeys) return;
     const currentConfig = functionKeys[editingKey];
     const newStatus = { 
       ...currentConfig.status, 
-      [statusKey]: !currentConfig.status[statusKey as keyof typeof currentConfig.status] 
+      [statusId]: !currentConfig.status[statusId] 
     };
     onUpdateFunctionKeys({
       ...functionKeys,
@@ -232,13 +232,13 @@ const MissionControl: React.FC<MissionControlProps> = ({
                 <div className="grid grid-cols-2 gap-1.5">
                   {STATUS_LABELS.map(({ id, label }) => (
                     <label key={id} className="flex items-center gap-2 cursor-pointer group">
-                      <div className={`w-3 h-3 border rounded-sm flex items-center justify-center ${currentConfig.status[id as keyof typeof currentConfig.status] ? 'bg-amber-600 border-amber-600' : 'border-[#444] group-hover:border-amber-500'}`}>
-                        {currentConfig.status[id as keyof typeof currentConfig.status] && <div className="w-1.5 h-1.5 bg-black rounded-[1px]"></div>}
+                      <div className={`w-3 h-3 border rounded-sm flex items-center justify-center ${currentConfig.status[id] ? 'bg-amber-600 border-amber-600' : 'border-[#444] group-hover:border-amber-500'}`}>
+                        {currentConfig.status[id] && <div className="w-1.5 h-1.5 bg-black rounded-[1px]"></div>}
                       </div>
                       <input 
                         type="checkbox" 
                         className="hidden"
-                        checked={!!currentConfig.status[id as keyof typeof currentConfig.status]}
+                        checked={!!currentConfig.status[id]}
                         onChange={() => handleStatusChange(id)}
                       />
                       <span className="text-[9px] text-gray-400 group-hover:text-gray-200 transition-colors">{label}</span>

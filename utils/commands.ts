@@ -20,11 +20,19 @@ export const NOUN_DICT: Record<string, string> = {
   '68': 'Landing Site Lat/Long',
 };
 
+// Status IDs mapping for reference:
+// 4: OPR ERR
+// 7: PROG
+// 9: TRACKER
+// 10: ALT
+// 11: VEL
+
 export const executeCommand = (verb: string, noun: string, state: DSKYState): Partial<DSKYState> => {
   // Simple simulator logic
   if (verb === '35') { // Lamp Test
+    const allOnStatus = Object.keys(state.status).reduce((acc, key) => ({ ...acc, [parseInt(key)]: true }), {} as Record<number, boolean>);
     return {
-      status: Object.keys(state.status).reduce((acc, key) => ({ ...acc, [key]: true }), {} as DSKYState['status']),
+      status: allOnStatus,
       r1: 'AAAAA', r2: 'AAAAA', r3: 'AAAAA'
     };
   }
@@ -43,7 +51,8 @@ export const executeCommand = (verb: string, noun: string, state: DSKYState): Pa
     return { prog: noun, r1: '00000' };
   }
 
-  return { status: { ...state.status, oprErr: true } };
+  // OPR ERR (4)
+  return { status: { ...state.status, 4: true } };
 };
 
 export const executeProgram = (prog: string, state: DSKYState): Partial<DSKYState> => {
@@ -52,17 +61,21 @@ export const executeProgram = (prog: string, state: DSKYState): Partial<DSKYStat
     case '11': // Earth Orbit Insertion (EOI)
       return {
         r1: '07800', r2: '25400', r3: '00100',
-        status: { ...state.status, vel: true, alt: true, prog: true }
+        // vel(11), alt(10), prog(7)
+        status: { ...state.status, 11: true, 10: true, 7: true }
       };
     case '63': // Lunar Landing Initial Phase
       return {
         r1: '00050', r2: '00010', r3: '00005',
-        status: { ...state.status, tracker: true, alt: true, prog: true }
+        // tracker(9), alt(10), prog(7)
+        status: { ...state.status, 9: true, 10: true, 7: true }
       };
     case '00':
-      return { status: { ...state.status, oprErr: true } };
+      // OPR ERR (4)
+      return { status: { ...state.status, 4: true } };
     default:
       // Se for um programa desconhecido, apenas limpa os registros
-      return { r1: '00000', r2: '00000', r3: '00000', status: { ...state.status, prog: true } };
+      // prog(7)
+      return { r1: '00000', r2: '00000', r3: '00000', status: { ...state.status, 7: true } };
   }
 };

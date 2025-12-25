@@ -3,7 +3,7 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'rea
 import Display from './Display';
 import StatusPanel from './StatusPanel';
 import Keypad from './Keypad';
-import { INITIAL_STATE } from '../constants';
+import { INITIAL_STATE, STATUS_LABELS } from '../constants';
 import { DSKYState, DSKYMode, FunctionKeyConfig } from '../types';
 import { executeCommand, executeProgram } from '../utils/commands';
 
@@ -32,6 +32,28 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     return () => clearInterval(interval);
   }, [mode]);
 
+  const sendSerialUpdate = (currentState: DSKYState) => {
+    if (onSendSerial) {
+      const statusPayload = STATUS_LABELS.map(s => ({
+        id: s.id,
+        label: s.label,
+        active: currentState.status[s.id],
+        color: s.color === 'text-red-500' ? 'red' : 'amber'
+      }));
+
+      const payload = JSON.stringify({
+        VERB: currentState.verb,
+        NOUN: currentState.noun,
+        PROG: currentState.prog,
+        R1: `${currentState.r1Sign}${currentState.r1}`,
+        R2: `${currentState.r2Sign}${currentState.r2}`,
+        R3: `${currentState.r3Sign}${currentState.r3}`,
+        STATUS: statusPayload
+      });
+      onSendSerial(payload);
+    }
+  };
+
   const handleKeyPress = (key: string) => {
     // Efeito visual de feedback no console para debug
     console.log(`DSKY Internal: Key Pressed -> ${key}`);
@@ -58,15 +80,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
         setState(newState);
 
         // Envia dados via Serial (JSON)
-        if (onSendSerial) {
-          const payload = JSON.stringify({
-            R1: `${newState.r1Sign}${newState.r1}`,
-            R2: `${newState.r2Sign}${newState.r2}`,
-            R3: `${newState.r3Sign}${newState.r3}`,
-            STATUS: newState.status
-          });
-          onSendSerial(payload);
-        }
+        sendSerialUpdate(newState);
       }
       return;
     }
@@ -78,8 +92,10 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'RSET') {
-      setState(prev => ({ ...prev, status: { ...prev.status, oprErr: false, prog: false } }));
-      if (state.r1 === 'AAAAA' || state.status.restart === true) setState(INITIAL_STATE);
+      // 4: OPR ERR, 7: PROG
+      setState(prev => ({ ...prev, status: { ...prev.status, 4: false, 7: false } }));
+      // 8: RESTART
+      if (state.r1 === 'AAAAA' || state.status[8] === true) setState(INITIAL_STATE);
       return;
     }
 
@@ -102,15 +118,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       setMode(DSKYMode.IDLE);
 
       // Serial Transmission Trigger
-      if (onSendSerial) {
-        const payload = JSON.stringify({
-          R1: `${newState.r1Sign}${newState.r1}`,
-          R2: `${newState.r2Sign}${newState.r2}`,
-          R3: `${newState.r3Sign}${newState.r3}`,
-          STATUS: newState.status
-        });
-        onSendSerial(payload);
-      }
+      sendSerialUpdate(newState);
       return;
     }
 
@@ -158,8 +166,9 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
 
   const displayValue = (val: string, length: number) => isLampTest ? 'AAAAA' : val;
   const displaySign = (sign: '+' | '-' | '') => isLampTest ? '+' : sign;
+  
   const displayStatus = isLampTest 
-    ? Object.keys(state.status).reduce((acc, k) => ({ ...acc, [k]: true }), {} as typeof state.status)
+    ? STATUS_LABELS.reduce((acc, { id }) => ({ ...acc, [id]: true }), {} as Record<number, boolean>)
     : state.status;
 
   const verbGlow = isLampTest || (mode === DSKYMode.ENTERING_VERB ? isFlashing : true);

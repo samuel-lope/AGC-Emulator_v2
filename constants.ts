@@ -1,19 +1,33 @@
 
 import { FunctionKeyConfig } from './types';
 
+// IDs sequenciais para os status:
+// 0: UPLINK ACTY
+// 1: NO ATT
+// 2: STBY
+// 3: KEY REL
+// 4: OPR ERR
+// 5: TEMP
+// 6: GIMBAL LOCK
+// 7: PROG
+// 8: RESTART
+// 9: TRACKER
+// 10: ALT
+// 11: VEL
+
 export const STATUS_LABELS = [
-  { id: 'uplinkActy', label: 'UPLINK ACTY', color: 'text-amber-400' },
-  { id: 'noAtt', label: 'NO ATT', color: 'text-red-500' },
-  { id: 'stby', label: 'STBY', color: 'text-amber-400' },
-  { id: 'keyRel', label: 'KEY REL', color: 'text-amber-400' },
-  { id: 'oprErr', label: 'OPR ERR', color: 'text-red-500' },
-  { id: 'temp', label: 'TEMP', color: 'text-red-500' },
-  { id: 'gimbalLock', label: 'GIMBAL LOCK', color: 'text-red-500' },
-  { id: 'prog', label: 'PROG', color: 'text-amber-400' },
-  { id: 'restart', label: 'RESTART', color: 'text-red-500' },
-  { id: 'tracker', label: 'TRACKER', color: 'text-amber-400' },
-  { id: 'alt', label: 'ALT', color: 'text-amber-400' },
-  { id: 'vel', label: 'VEL', color: 'text-amber-400' },
+  { id: 0, label: 'UPLINK ACTY', color: 'text-amber-400' },
+  { id: 1, label: 'NO ATT', color: 'text-red-500' },
+  { id: 2, label: 'STBY', color: 'text-amber-400' },
+  { id: 3, label: 'KEY REL', color: 'text-amber-400' },
+  { id: 4, label: 'OPR ERR', color: 'text-red-500' },
+  { id: 5, label: 'TEMP', color: 'text-red-500' },
+  { id: 6, label: 'GIMBAL LOCK', color: 'text-red-500' },
+  { id: 7, label: 'PROG', color: 'text-amber-400' },
+  { id: 8, label: 'RESTART', color: 'text-red-500' },
+  { id: 9, label: 'TRACKER', color: 'text-amber-400' },
+  { id: 10, label: 'ALT', color: 'text-amber-400' },
+  { id: 11, label: 'VEL', color: 'text-amber-400' },
 ];
 
 export const INITIAL_STATE = {
@@ -27,22 +41,28 @@ export const INITIAL_STATE = {
   r2Sign: '+' as const,
   r3Sign: '+' as const,
   status: {
-    uplinkActy: false,
-    noAtt: false,
-    stby: true,
-    keyRel: false,
-    oprErr: false,
-    temp: false,
-    gimbalLock: false,
-    prog: false,
-    restart: false,
-    tracker: false,
-    alt: false,
-    vel: false,
+    0: false, // uplinkActy
+    1: false, // noAtt
+    2: true,  // stby
+    3: false, // keyRel
+    4: false, // oprErr
+    5: false, // temp
+    6: false, // gimbalLock
+    7: false, // prog
+    8: false, // restart
+    9: false, // tracker
+    10: false, // alt
+    11: false, // vel
   }
 };
 
 const EMPTY_STATUS = INITIAL_STATE.status;
+
+// Helper para criar status modificado
+const withStatus = (overrides: Record<number, boolean>) => ({
+  ...EMPTY_STATUS,
+  ...overrides
+});
 
 // Configuração padrão das teclas de função
 export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
@@ -53,7 +73,8 @@ export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
     r1: '0AB37', r1Sign: '+',
     r2: '00000', r2Sign: '+',
     r3: '00000', r3Sign: '+',
-    status: { ...EMPTY_STATUS, restart: true, vel: true, alt: true }
+    // restart(8), vel(11), alt(10)
+    status: withStatus({ 8: true, 11: true, 10: true })
   },
   'F2': {
     key: 'F2',
@@ -62,7 +83,8 @@ export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
     r1: '00000', r1Sign: '+',
     r2: '00900', r2Sign: '-',
     r3: '00000', r3Sign: '+',
-    status: { ...EMPTY_STATUS, uplinkActy: true, stby: true, oprErr: true, temp: true }
+    // uplinkActy(0), stby(2), oprErr(4), temp(5)
+    status: withStatus({ 0: true, 2: true, 4: true, 5: true })
   },
   'F3': {
     key: 'F3',
@@ -71,7 +93,8 @@ export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
     r1: '00000', r1Sign: '+',
     r2: '00000', r2Sign: '+',
     r3: '12345', r3Sign: '+',
-    status: { ...EMPTY_STATUS, gimbalLock: true, noAtt: true, oprErr: true, temp: true }
+    // gimbalLock(6), noAtt(1), oprErr(4), temp(5)
+    status: withStatus({ 6: true, 1: true, 4: true, 5: true })
   },
   'F4': {
     key: 'F4',
@@ -80,7 +103,8 @@ export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
     r1: '00000', r1Sign: '+',
     r2: '00000', r2Sign: '+',
     r3: '00000', r3Sign: '+',
-    status: { ...EMPTY_STATUS, restart: true }
+    // restart(8)
+    status: withStatus({ 8: true })
   },
   'F5': {
     key: 'F5',
@@ -89,6 +113,7 @@ export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
     r1: 'A8944', r1Sign: '-',
     r2: 'F0200', r2Sign: '-',
     r3: 'E010C', r3Sign: '-',
-    status: { ...EMPTY_STATUS, alt: true, vel: true, tracker: true, oprErr: true, temp: true }
+    // alt(10), vel(11), tracker(9), oprErr(4), temp(5)
+    status: withStatus({ 10: true, 11: true, 9: true, 4: true, 5: true })
   }
 };

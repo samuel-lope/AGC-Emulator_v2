@@ -16,20 +16,8 @@ export interface DSKYState {
   r1Sign: '+' | '-' | '';
   r2Sign: '+' | '-' | '';
   r3Sign: '+' | '-' | '';
-  status: {
-    uplinkActy: boolean;
-    noAtt: boolean;
-    stby: boolean;
-    keyRel: boolean;
-    oprErr: boolean;
-    temp: boolean;
-    gimbalLock: boolean;
-    prog: boolean;
-    restart: boolean;
-    tracker: boolean;
-    alt: boolean;
-    vel: boolean;
-  };
+  // Status keys are now sequential IDs (0-11)
+  status: Record<number, boolean>;
 }
 
 export interface FunctionKeyConfig {
