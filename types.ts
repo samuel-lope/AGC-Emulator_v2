@@ -6,6 +6,12 @@ export enum DSKYMode {
   ENTERING_DATA = 'ENTERING_DATA'
 }
 
+export interface DSKYStatusItem {
+  active: boolean;
+  label: string;
+  color: 'red' | 'amber';
+}
+
 export interface DSKYState {
   verb: string;
   noun: string;
@@ -16,8 +22,8 @@ export interface DSKYState {
   r1Sign: '+' | '-' | '';
   r2Sign: '+' | '-' | '';
   r3Sign: '+' | '-' | '';
-  // Status keys are now sequential IDs (0-11)
-  status: Record<number, boolean>;
+  // Status keys are now objects containing full config
+  status: Record<number, DSKYStatusItem>;
 }
 
 export interface FunctionKeyConfig {

@@ -1,36 +1,38 @@
 
-import { FunctionKeyConfig } from './types';
+import { FunctionKeyConfig, DSKYState, DSKYStatusItem } from './types';
 
-// IDs sequenciais para os status:
-// 0: UPLINK ACTY
-// 1: NO ATT
-// 2: STBY
-// 3: KEY REL
-// 4: OPR ERR
-// 5: TEMP
-// 6: GIMBAL LOCK
-// 7: PROG
-// 8: RESTART
-// 9: TRACKER
-// 10: ALT
-// 11: VEL
+// Default configuration for labels and colors
+const DEFAULT_LABELS: Record<number, { label: string, color: 'red' | 'amber' }> = {
+  0: { label: 'UPLINK ACTY', color: 'amber' },
+  1: { label: 'NO ATT', color: 'red' },
+  2: { label: 'STBY', color: 'amber' },
+  3: { label: 'KEY REL', color: 'amber' },
+  4: { label: 'OPR ERR', color: 'red' },
+  5: { label: 'TEMP', color: 'red' },
+  6: { label: 'GIMBAL LOCK', color: 'red' },
+  7: { label: 'PROG', color: 'amber' },
+  8: { label: 'RESTART', color: 'red' },
+  9: { label: 'TRACKER', color: 'amber' },
+  10: { label: 'ALT', color: 'amber' },
+  11: { label: 'VEL', color: 'amber' },
+};
 
-export const STATUS_LABELS = [
-  { id: 0, label: 'UPLINK ACTY', color: 'text-amber-400' },
-  { id: 1, label: 'NO ATT', color: 'text-red-500' },
-  { id: 2, label: 'STBY', color: 'text-amber-400' },
-  { id: 3, label: 'KEY REL', color: 'text-amber-400' },
-  { id: 4, label: 'OPR ERR', color: 'text-red-500' },
-  { id: 5, label: 'TEMP', color: 'text-red-500' },
-  { id: 6, label: 'GIMBAL LOCK', color: 'text-red-500' },
-  { id: 7, label: 'PROG', color: 'text-amber-400' },
-  { id: 8, label: 'RESTART', color: 'text-red-500' },
-  { id: 9, label: 'TRACKER', color: 'text-amber-400' },
-  { id: 10, label: 'ALT', color: 'text-amber-400' },
-  { id: 11, label: 'VEL', color: 'text-amber-400' },
-];
+// Helper to build initial status object
+const buildInitialStatus = (): Record<number, DSKYStatusItem> => {
+  const status: Record<number, DSKYStatusItem> = {};
+  for (let i = 0; i <= 11; i++) {
+    status[i] = {
+      active: false,
+      label: DEFAULT_LABELS[i].label,
+      color: DEFAULT_LABELS[i].color
+    };
+  }
+  // Set default active states (STBY is usually on)
+  status[2].active = true; 
+  return status;
+};
 
-export const INITIAL_STATE = {
+export const INITIAL_STATE: DSKYState = {
   verb: '00',
   noun: '00',
   prog: '00',
@@ -40,29 +42,28 @@ export const INITIAL_STATE = {
   r1Sign: '+' as const,
   r2Sign: '+' as const,
   r3Sign: '+' as const,
-  status: {
-    0: false, // uplinkActy
-    1: false, // noAtt
-    2: true,  // stby
-    3: false, // keyRel
-    4: false, // oprErr
-    5: false, // temp
-    6: false, // gimbalLock
-    7: false, // prog
-    8: false, // restart
-    9: false, // tracker
-    10: false, // alt
-    11: false, // vel
-  }
+  status: buildInitialStatus()
 };
 
-const EMPTY_STATUS = INITIAL_STATE.status;
+// Helper para criar status modificado mantendo labels/cores originais se não especificado
+// Agora aceita overrides de active, e opcionalmente label/color
+const withStatus = (overrides: Record<number, boolean>): Record<number, DSKYStatusItem> => {
+  const base = buildInitialStatus();
+  Object.keys(overrides).forEach((key) => {
+    const id = parseInt(key);
+    if (base[id]) {
+      base[id].active = overrides[id];
+    }
+  });
+  return base;
+};
 
-// Helper para criar status modificado
-const withStatus = (overrides: Record<number, boolean>) => ({
-  ...EMPTY_STATUS,
-  ...overrides
-});
+// Export STATUS_LABELS for backward compatibility components if needed, 
+// though we primarily use state now.
+export const STATUS_LABELS = Object.entries(DEFAULT_LABELS).map(([id, val]) => ({
+  id: parseInt(id),
+  ...val
+}));
 
 // Configuração padrão das teclas de função
 export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {

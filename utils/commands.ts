@@ -1,5 +1,5 @@
 
-import { DSKYState } from '../types';
+import { DSKYState, DSKYStatusItem } from '../types';
 
 export interface CommandDefinition {
   description: string;
@@ -20,17 +20,15 @@ export const NOUN_DICT: Record<string, string> = {
   '68': 'Landing Site Lat/Long',
 };
 
-// Status IDs mapping for reference:
-// 4: OPR ERR
-// 7: PROG
-// 9: TRACKER
-// 10: ALT
-// 11: VEL
-
 export const executeCommand = (verb: string, noun: string, state: DSKYState): Partial<DSKYState> => {
   // Simple simulator logic
   if (verb === '35') { // Lamp Test
-    const allOnStatus = Object.keys(state.status).reduce((acc, key) => ({ ...acc, [parseInt(key)]: true }), {} as Record<number, boolean>);
+    // Create a new status object where all are active, preserving labels/colors
+    const allOnStatus: Record<number, DSKYStatusItem> = {};
+    Object.entries(state.status).forEach(([key, val]) => {
+      allOnStatus[parseInt(key)] = { ...val, active: true };
+    });
+
     return {
       status: allOnStatus,
       r1: 'AAAAA', r2: 'AAAAA', r3: 'AAAAA'
@@ -47,35 +45,39 @@ export const executeCommand = (verb: string, noun: string, state: DSKYState): Pa
   }
 
   if (verb === '37') { // Change Program
-    // Agora o programa assume o valor do Noun inserido
     return { prog: noun, r1: '00000' };
   }
 
   // OPR ERR (4)
-  return { status: { ...state.status, 4: true } };
+  const newStatus = { ...state.status };
+  if (newStatus[4]) newStatus[4] = { ...newStatus[4], active: true };
+  return { status: newStatus };
 };
 
 export const executeProgram = (prog: string, state: DSKYState): Partial<DSKYState> => {
-  // Simulação de programas pré-gravados
+  // Helper to activate specific IDs
+  const activate = (ids: number[]) => {
+    const s = { ...state.status };
+    ids.forEach(id => {
+      if(s[id]) s[id] = { ...s[id], active: true };
+    });
+    return s;
+  };
+
   switch (prog) {
-    case '11': // Earth Orbit Insertion (EOI)
+    case '11': // Earth Orbit Insertion
       return {
         r1: '07800', r2: '25400', r3: '00100',
-        // vel(11), alt(10), prog(7)
-        status: { ...state.status, 11: true, 10: true, 7: true }
+        status: activate([11, 10, 7]) // vel, alt, prog
       };
     case '63': // Lunar Landing Initial Phase
       return {
         r1: '00050', r2: '00010', r3: '00005',
-        // tracker(9), alt(10), prog(7)
-        status: { ...state.status, 9: true, 10: true, 7: true }
+        status: activate([9, 10, 7]) // tracker, alt, prog
       };
     case '00':
-      // OPR ERR (4)
-      return { status: { ...state.status, 4: true } };
+      return { status: activate([4]) }; // opr err
     default:
-      // Se for um programa desconhecido, apenas limpa os registros
-      // prog(7)
-      return { r1: '00000', r2: '00000', r3: '00000', status: { ...state.status, 7: true } };
+      return { r1: '00000', r2: '00000', r3: '00000', status: activate([7]) }; // prog
   }
 };

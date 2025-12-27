@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { VERB_DICT, NOUN_DICT } from '../utils/commands';
-import { FunctionKeyConfig } from '../types';
+import { FunctionKeyConfig, DSKYStatusItem } from '../types';
 import { STATUS_LABELS } from '../constants';
 
 interface MissionControlProps {
@@ -30,14 +30,77 @@ const MissionControl: React.FC<MissionControlProps> = ({
     });
   };
 
-  // Helper para atualizar status flags
-  const handleStatusChange = (statusId: number) => {
+  // Helper para atualizar status item (active, label, color)
+  const handleStatusChange = (statusId: number, field: keyof DSKYStatusItem, value: any) => {
     if (!onUpdateFunctionKeys) return;
     const currentConfig = functionKeys[editingKey];
+    const currentStatus = currentConfig.status[statusId];
+    
     const newStatus = { 
       ...currentConfig.status, 
-      [statusId]: !currentConfig.status[statusId] 
+      [statusId]: { ...currentStatus, [field]: value }
     };
+    
+    onUpdateFunctionKeys({
+      ...functionKeys,
+      [editingKey]: { ...currentConfig, status: newStatus }
+    });
+  };
+
+  // Replica a configuração de Status (Labels e Cores) da tecla atual para TODAS as outras
+  // Preserva o estado 'active' de cada tecla de destino
+  const handleReplicateStatus = () => {
+    if (!onUpdateFunctionKeys) return;
+    const sourceStatus = functionKeys[editingKey].status;
+    
+    const newFunctionKeys = { ...functionKeys };
+    Object.keys(newFunctionKeys).forEach(key => {
+      // Pula a tecla atual (origem)
+      if (key === editingKey) return;
+
+      const targetConfig = newFunctionKeys[key];
+      const newStatus = { ...targetConfig.status };
+
+      // Atualiza apenas label e color, mantendo o active original do alvo
+      Object.keys(newStatus).forEach(idStr => {
+        const id = parseInt(idStr);
+        if (sourceStatus[id]) {
+          newStatus[id] = {
+            ...newStatus[id], // Mantém active existente
+            label: sourceStatus[id].label, // Copia label da origem
+            color: sourceStatus[id].color  // Copia cor da origem
+          };
+        }
+      });
+
+      newFunctionKeys[key] = {
+        ...targetConfig,
+        status: newStatus
+      };
+    });
+
+    onUpdateFunctionKeys(newFunctionKeys);
+  };
+
+  // Restaura os labels e cores padrão para a tecla atual, preservando o estado 'active' atual
+  const handleResetStatusDefaults = () => {
+    if (!onUpdateFunctionKeys) return;
+    
+    const currentConfig = functionKeys[editingKey];
+    const currentStatus = currentConfig.status;
+    const newStatus: Record<number, DSKYStatusItem> = {};
+
+    STATUS_LABELS.forEach(item => {
+      // Preserva o estado 'active' que o usuário definiu nesta tecla
+      const wasActive = currentStatus[item.id]?.active || false;
+
+      newStatus[item.id] = {
+        active: wasActive, 
+        label: item.label,
+        color: item.color as 'red' | 'amber'
+      };
+    });
+
     onUpdateFunctionKeys({
       ...functionKeys,
       [editingKey]: { ...currentConfig, status: newStatus }
@@ -226,24 +289,74 @@ const MissionControl: React.FC<MissionControlProps> = ({
                 ))}
               </div>
 
-              {/* Status Flags Checkboxes */}
+              {/* Status Flags Checkboxes - NOW WITH EDITABLE LABELS AND COLORS */}
               <div>
-                <label className="text-[9px] text-gray-500 uppercase tracking-widest mb-2 block">Status Indicators</label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {STATUS_LABELS.map(({ id, label }) => (
-                    <label key={id} className="flex items-center gap-2 cursor-pointer group">
-                      <div className={`w-3 h-3 border rounded-sm flex items-center justify-center ${currentConfig.status[id] ? 'bg-amber-600 border-amber-600' : 'border-[#444] group-hover:border-amber-500'}`}>
-                        {currentConfig.status[id] && <div className="w-1.5 h-1.5 bg-black rounded-[1px]"></div>}
-                      </div>
-                      <input 
-                        type="checkbox" 
-                        className="hidden"
-                        checked={!!currentConfig.status[id]}
-                        onChange={() => handleStatusChange(id)}
-                      />
-                      <span className="text-[9px] text-gray-400 group-hover:text-gray-200 transition-colors">{label}</span>
-                    </label>
-                  ))}
+                <div className="flex items-end justify-between mb-2">
+                  <label className="text-[9px] text-gray-500 uppercase tracking-widest block">Status Indicators</label>
+                  <div className="flex gap-2">
+                     <button
+                      onClick={handleResetStatusDefaults}
+                      className="text-[8px] bg-[#1a1a1a] border border-[#333] text-gray-500 px-2 py-0.5 rounded hover:bg-[#222] hover:text-gray-300 hover:border-gray-500 transition-colors uppercase"
+                      title="Reset names and colors to factory defaults"
+                    >
+                      Reset Defaults
+                    </button>
+                    <button
+                      onClick={handleReplicateStatus}
+                      className="text-[8px] bg-amber-900/20 border border-amber-900/40 text-amber-600 px-2 py-0.5 rounded hover:bg-amber-900/40 hover:text-amber-500 hover:border-amber-600 transition-colors uppercase"
+                      title="Copy this status configuration to all F-keys"
+                    >
+                      Apply to All
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-1.5 bg-[#111] p-2 rounded border border-[#222]">
+                  {Object.entries(currentConfig.status)
+                    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                    .map(([idStr, config]) => {
+                      const id = parseInt(idStr);
+                      return (
+                        <div key={id} className="flex items-center gap-2 border-b border-white/5 pb-1.5 mb-1.5 last:mb-0 last:border-0 last:pb-0">
+                          
+                          {/* Active Checkbox */}
+                          <label className="cursor-pointer group flex items-center">
+                            <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-colors ${config.active ? 'bg-amber-600 border-amber-600' : 'border-[#444] group-hover:border-amber-500'}`}>
+                              {config.active && <div className="w-2 h-2 bg-black rounded-[1px]"></div>}
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              className="hidden"
+                              checked={config.active}
+                              onChange={(e) => handleStatusChange(id, 'active', e.target.checked)}
+                            />
+                          </label>
+
+                          {/* ID Label */}
+                          <span className="text-[8px] text-gray-600 font-mono w-4 text-center">{id}</span>
+
+                          {/* Text Input for Label */}
+                          <input 
+                            type="text" 
+                            className="flex-1 bg-[#050505] border border-[#333] text-[9px] text-gray-300 px-1.5 py-0.5 rounded focus:border-amber-500 focus:outline-none font-mono uppercase"
+                            value={config.label}
+                            onChange={(e) => handleStatusChange(id, 'label', e.target.value)}
+                          />
+
+                          {/* Color Toggle */}
+                          <button
+                            onClick={() => handleStatusChange(id, 'color', config.color === 'red' ? 'amber' : 'red')}
+                            className={`w-12 h-4 rounded text-[8px] font-bold uppercase transition-all flex items-center justify-center border ${
+                              config.color === 'red' 
+                                ? 'bg-red-900/50 text-red-400 border-red-800 hover:bg-red-900' 
+                                : 'bg-amber-900/50 text-amber-400 border-amber-800 hover:bg-amber-900'
+                            }`}
+                          >
+                            {config.color}
+                          </button>
+                        </div>
+                      );
+                  })}
                 </div>
               </div>
             
@@ -251,13 +364,6 @@ const MissionControl: React.FC<MissionControlProps> = ({
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-[#222] text-center mt-auto">
-          <p className="text-[8px] text-gray-600 uppercase leading-normal">
-            Acknowledge: This is a digital twin of the Apollo Guidance Computer. 
-            <br />
-            Mission Critical Software v2.5.0
-          </p>
-        </div>
       </div>
       
       <style>{`
