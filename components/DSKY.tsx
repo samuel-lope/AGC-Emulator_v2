@@ -20,17 +20,8 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   const [state, setState] = useState<DSKYState>(INITIAL_STATE);
   const [mode, setMode] = useState<DSKYMode>(DSKYMode.IDLE);
   const [inputBuffer, setInputBuffer] = useState<string>('');
-  const [isFlashing, setIsFlashing] = useState<boolean>(false);
+  // Flashing state removed for agility
   const [isLampTest, setIsLampTest] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (mode === DSKYMode.IDLE) {
-      setIsFlashing(false);
-      return;
-    }
-    const interval = setInterval(() => setIsFlashing(f => !f), 400);
-    return () => clearInterval(interval);
-  }, [mode]);
 
   const sendSerialUpdate = (currentState: DSKYState) => {
     if (onSendSerial) {
@@ -163,14 +154,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       // Caso 1: Se estiver editando, limpa apenas o buffer/campo atual
       if (editingModes.includes(mode)) {
         setInputBuffer('');
-        
-        // Atualiza visualmente o estado para Verb/Noun imediatamente para refletir o zero
-        if (mode === DSKYMode.ENTERING_VERB) {
-          setState(prev => ({ ...prev, verb: '00' }));
-        } else if (mode === DSKYMode.ENTERING_NOUN) {
-          setState(prev => ({ ...prev, noun: '00' }));
-        }
-        // Para R1/R2/R3, a limpeza do inputBuffer já é refletida no render via variável r1Val/etc
+        // No visual updates to state here, inputBuffer is handled in render
         return;
       }
 
@@ -251,13 +235,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       const newBuf = (inputBuffer + key).slice(-maxLength);
       setInputBuffer(newBuf);
       
-      // Update display immediately for Verb/Noun only (Standard AGC behavior typically shows entry)
-      // For Registers, we use the display logic to show buffer, but don't commit to state yet
-      if (mode === DSKYMode.ENTERING_VERB) {
-        setState(prev => ({ ...prev, verb: newBuf.slice(-2).padStart(2, '0') }));
-      } else if (mode === DSKYMode.ENTERING_NOUN) {
-        setState(prev => ({ ...prev, noun: newBuf.slice(-2).padStart(2, '0') }));
-      }
+      // Removed immediate state update for VERB/NOUN to allow "underscore" visualization
     }
   };
 
@@ -265,7 +243,6 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     triggerKey: handleKeyPress
   }));
 
-  const displayValue = (val: string, length: number) => isLampTest ? 'AAAAA' : val;
   const displaySign = (sign: '+' | '-' | '') => isLampTest ? '+' : sign;
   
   // Logic for lamp test display
@@ -277,17 +254,26 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       }, {} as Record<number, DSKYStatusItem>)
     : state.status;
 
-  // Glow Logic
-  const verbGlow = isLampTest || (mode === DSKYMode.ENTERING_VERB ? isFlashing : true);
-  const nounGlow = isLampTest || (mode === DSKYMode.ENTERING_NOUN ? isFlashing : true);
-  const r1Glow = isLampTest || (mode === DSKYMode.ENTERING_R1 ? isFlashing : true);
-  const r2Glow = isLampTest || (mode === DSKYMode.ENTERING_R2 ? isFlashing : true);
-  const r3Glow = isLampTest || (mode === DSKYMode.ENTERING_R3 ? isFlashing : true);
+  // Render Helper: Displays underscores for empty slots during editing
+  const getRenderValue = (editing: boolean, length: number, actualValue: string) => {
+    if (isLampTest) return 'AAAAA'.slice(0, length);
+    if (editing) {
+      // Shows underscores for missing digits (e.g., "__" or "___12")
+      return inputBuffer.padStart(length, '_');
+    }
+    return actualValue;
+  }
 
-  // Value Logic (Show InputBuffer if editing that specific field)
-  const r1Val = mode === DSKYMode.ENTERING_R1 ? inputBuffer.padStart(5, '0') : state.r1;
-  const r2Val = mode === DSKYMode.ENTERING_R2 ? inputBuffer.padStart(5, '0') : state.r2;
-  const r3Val = mode === DSKYMode.ENTERING_R3 ? inputBuffer.padStart(5, '0') : state.r3;
+  // Value Logic
+  const progVal = isLampTest ? '88' : state.prog;
+  const verbVal = getRenderValue(mode === DSKYMode.ENTERING_VERB, 2, state.verb);
+  const nounVal = getRenderValue(mode === DSKYMode.ENTERING_NOUN, 2, state.noun);
+  const r1Val = getRenderValue(mode === DSKYMode.ENTERING_R1, 5, state.r1);
+  const r2Val = getRenderValue(mode === DSKYMode.ENTERING_R2, 5, state.r2);
+  const r3Val = getRenderValue(mode === DSKYMode.ENTERING_R3, 5, state.r3);
+
+  // All displays "glow" constantly now, mimicking the removal of the flash animation
+  const glow = true;
 
   return (
     <div className="dsky-panel w-full h-full p-6 rounded-xl border-4 border-[#333] flex flex-col gap-4 select-none shadow-[inset_0_2px_20px_rgba(255,255,255,0.05)] overflow-hidden">
@@ -298,15 +284,15 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
 
         <div className="flex-1 flex bg-[#050505] p-2 rounded-lg border-2 border-[#1a1a1a] shadow-[inset_0_4px_30px_rgba(0,0,0,1)] min-h-0 overflow-hidden">
           <div className="flex-[0.7] flex flex-col justify-around items-center border-r border-[#222] py-2 shrink-0 overflow-hidden">
-            <Display label="PROG" value={isLampTest ? '88' : state.prog} length={2} glow={true} size="md" />
-            <Display label="VERB" value={isLampTest ? '88' : state.verb} length={2} glow={verbGlow} size="md" />
-            <Display label="NOUN" value={isLampTest ? '88' : state.noun} length={2} glow={nounGlow} size="md" />
+            <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
+            <Display label="VERB" value={verbVal} length={2} glow={glow} size="md" />
+            <Display label="NOUN" value={nounVal} length={2} glow={glow} size="md" />
           </div>
 
           <div className="flex-[1.3] flex flex-col justify-around items-center py-1 overflow-hidden">
-            <Display sign={displaySign(state.r1Sign)} label="R1" value={displayValue(r1Val, 5)} length={5} size="lg" glow={r1Glow} />
-            <Display sign={displaySign(state.r2Sign)} label="R2" value={displayValue(r2Val, 5)} length={5} size="lg" glow={r2Glow} />
-            <Display sign={displaySign(state.r3Sign)} label="R3" value={displayValue(r3Val, 5)} length={5} size="lg" glow={r3Glow} />
+            <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} />
+            <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} />
+            <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} />
           </div>
         </div>
       </div>

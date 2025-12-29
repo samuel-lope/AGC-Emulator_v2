@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DSKYState } from '../types';
+import { DSKYState, DSKYStatusItem } from '../types';
 
 interface StatusPanelProps {
   status: DSKYState['status'];
@@ -9,7 +9,10 @@ interface StatusPanelProps {
 const StatusPanel: React.FC<StatusPanelProps> = ({ status }) => {
   // Convert object to array and sort by ID to ensure order
   const statusItems = Object.entries(status)
-    .map(([id, config]) => ({ id: parseInt(id), ...config }))
+    .map(([id, config]) => {
+      const item = config as DSKYStatusItem;
+      return { id: parseInt(id), ...item };
+    })
     .sort((a, b) => a.id - b.id);
 
   return (

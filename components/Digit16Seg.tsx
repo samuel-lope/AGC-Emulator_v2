@@ -26,6 +26,7 @@ const SEGMENT_MAP: Record<string, string[]> = {
   'F': ['a1', 'a2', 'f', 'e', 'g1', 'g2'],
   '+': ['g1', 'g2', 'i', 'l'],
   '-': ['g1', 'g2'],
+  '_': ['d1', 'd2'], // Underscore for input placeholder
   'AAAAA': ['a1', 'a2', 'f', 'b', 'g1', 'g2', 'e', 'c', 'd1', 'd2', 'h', 'i', 'j', 'k', 'l', 'm'], // All segments for test
 };
 

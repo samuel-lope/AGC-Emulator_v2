@@ -379,7 +379,8 @@ const MissionControl: React.FC<MissionControlProps> = ({
                 <div className="grid grid-cols-1 gap-1.5 bg-[#111] p-2 rounded border border-[#222]">
                   {Object.entries(currentConfig.status)
                     .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-                    .map(([idStr, config]) => {
+                    .map(([idStr, val]) => {
+                      const config = val as DSKYStatusItem;
                       const id = parseInt(idStr);
                       return (
                         <div key={id} className="flex items-center gap-2 border-b border-white/5 pb-1.5 mb-1.5 last:mb-0 last:border-0 last:pb-0">
