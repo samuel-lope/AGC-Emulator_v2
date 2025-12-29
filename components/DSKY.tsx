@@ -60,7 +60,9 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   const handleKeyPress = (key: string) => {
     console.log(`DSKY Internal: Key Pressed -> ${key}`);
 
-    if (key.startsWith('F')) {
+    // Fix: Ensure we don't trap the Hex digit 'F' as a Function Key
+    // Function keys are F1, F2... (length > 1), while Hex F is just 'F'
+    if (key.startsWith('F') && key.length > 1) {
       const config = functionKeys[key];
       if (config) {
         // Now fully replaces status object including labels/colors
@@ -129,7 +131,23 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'CLR') {
+      const newState = {
+        ...state,
+        verb: '00',
+        noun: '00',
+        prog: '00',
+        r1: '00000',
+        r2: '00000',
+        r3: '00000',
+        r1Sign: '+' as const,
+        r2Sign: '+' as const,
+        r3Sign: '+' as const
+      };
+
+      setState(newState);
+      setMode(DSKYMode.IDLE);
       setInputBuffer('');
+      sendSerialUpdate(newState);
       return;
     }
 
@@ -147,7 +165,8 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       return;
     }
 
-    if (/^[0-9]$/.test(key)) {
+    // Updated Regex to allow A-F for Hexadecimal input
+    if (/^[0-9A-F]$/.test(key)) {
       const newBuf = (inputBuffer + key).slice(-5);
       setInputBuffer(newBuf);
       

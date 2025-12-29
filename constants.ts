@@ -65,6 +65,15 @@ export const STATUS_LABELS = Object.entries(DEFAULT_LABELS).map(([id, val]) => (
   ...val
 }));
 
+// Definição do Layout do Teclado (6 colunas x 5 linhas)
+export const KEYPAD_LAYOUT: string[][] = [
+  ['A', 'B', 'C', 'D', 'E', 'F'],
+  ['VERB', '7', '8', '9', 'F1', 'F2'],
+  ['NOUN', '4', '5', '6', 'LAMP', 'F3'],
+  ['PROC', '1', '2', '3', 'RSET', 'F4'],
+  ['CLR', '-', '0', '+', 'ENTR', 'F5']
+];
+
 // Configuração padrão das teclas de função
 export const DEFAULT_FUNCTION_KEYS: Record<string, FunctionKeyConfig> = {
   'F1': {

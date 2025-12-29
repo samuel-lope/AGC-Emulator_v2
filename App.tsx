@@ -152,6 +152,7 @@ const App: React.FC = () => {
           
           <MissionControl 
             onConnectSerial={connectSerial} 
+            onSendSerial={sendSerialData}
             isSerialConnected={isSerialConnected} 
             functionKeys={functionKeys}
             onUpdateFunctionKeys={handleUpdateFunctionKeys}

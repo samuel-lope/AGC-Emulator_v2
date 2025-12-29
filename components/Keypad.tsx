@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { KEYPAD_LAYOUT } from '../constants';
 
 interface KeypadProps {
   onKeyPress: (key: string) => void;
@@ -7,26 +8,18 @@ interface KeypadProps {
 }
 
 const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
-  const keys = [
-    ['VERB', '7', '8', '9', 'F1'],
-    ['NOUN', '4', '5', '6', 'F2'],
-    ['PROC', '1', '2', '3', 'F3'],
-    ['CLR', '0', '+', '-', 'F4'],
-    ['KEY REL', 'ENTR', 'RSET', 'LAMP', 'F5']
-  ];
-
   const isFunctional = (key: string) => 
-    ['VERB', 'NOUN', 'PROC', 'CLR', 'KEY REL', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key);
+    ['VERB', 'NOUN', 'PROC', 'CLR', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key);
 
   const getLabelColor = (key: string) => {
     if (isFunctional(key)) return 'text-[#d4af37]'; // Gold/Amber para funções estilo HP 12C
     if (['+', '-'].includes(key)) return 'text-[#39ff14]'; // Verde AGC para sinais
-    return 'text-[#f0f0f0]'; // Branco para números
+    return 'text-[#f0f0f0]'; // Branco para números (0-9, A-F)
   };
 
   return (
-    <div className={`grid grid-cols-5 gap-3 ${compact ? 'p-2' : 'p-4'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222]`}>
-      {keys.flat().map((key, i) => (
+    <div className={`grid grid-cols-6 gap-3 ${compact ? 'p-2' : 'p-4'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222]`}>
+      {KEYPAD_LAYOUT.flat().map((key, i) => (
         key ? (
           <button
             key={i}
