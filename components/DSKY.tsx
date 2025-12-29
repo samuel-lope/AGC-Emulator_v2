@@ -122,6 +122,25 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'PROC') {
+      // Program ED Logic
+      if (state.prog === 'ED') {
+        if (state.noun === '01') {
+          setMode(DSKYMode.ENTERING_R1);
+          setInputBuffer('');
+          return;
+        }
+        if (state.noun === '02') {
+          setMode(DSKYMode.ENTERING_R2);
+          setInputBuffer('');
+          return;
+        }
+        if (state.noun === '03') {
+          setMode(DSKYMode.ENTERING_R3);
+          setInputBuffer('');
+          return;
+        }
+      }
+
       const result = executeProgram(state.prog, state);
       const newState = { ...state, ...result };
       setState(newState);
@@ -131,6 +150,11 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'CLR') {
+      if ([DSKYMode.ENTERING_R1, DSKYMode.ENTERING_R2, DSKYMode.ENTERING_R3].includes(mode)) {
+        setInputBuffer(''); // Just clear the buffer if editing register
+        return;
+      }
+
       const newState = {
         ...state,
         verb: '00',
@@ -152,14 +176,39 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'ENTR') {
+      let newState = { ...state };
+      let shouldUpdate = false;
+
       if (mode === DSKYMode.ENTERING_VERB) {
-        setState(prev => ({ ...prev, verb: inputBuffer.padStart(2, '0') }));
+        newState.verb = inputBuffer.padStart(2, '0');
+        shouldUpdate = true;
       } else if (mode === DSKYMode.ENTERING_NOUN) {
-        setState(prev => ({ ...prev, noun: inputBuffer.padStart(2, '0') }));
+        newState.noun = inputBuffer.padStart(2, '0');
+        shouldUpdate = true;
+      } else if (mode === DSKYMode.ENTERING_R1) {
+        newState.r1 = inputBuffer.padStart(5, '0');
+        shouldUpdate = true;
+      } else if (mode === DSKYMode.ENTERING_R2) {
+        newState.r2 = inputBuffer.padStart(5, '0');
+        shouldUpdate = true;
+      } else if (mode === DSKYMode.ENTERING_R3) {
+        newState.r3 = inputBuffer.padStart(5, '0');
+        shouldUpdate = true;
       } else {
+        // IDLE Execute Command
         const result = executeCommand(state.verb, state.noun, state);
-        setState(prev => ({ ...prev, ...result }));
+        newState = { ...state, ...result };
+        shouldUpdate = true;
       }
+
+      if (shouldUpdate) {
+        setState(newState);
+        if ([DSKYMode.ENTERING_R1, DSKYMode.ENTERING_R2, DSKYMode.ENTERING_R3].includes(mode)) {
+           // For registers, we only send serial update on Enter
+           sendSerialUpdate(newState);
+        }
+      }
+      
       setMode(DSKYMode.IDLE);
       setInputBuffer('');
       return;
@@ -167,9 +216,15 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
 
     // Updated Regex to allow A-F for Hexadecimal input
     if (/^[0-9A-F]$/.test(key)) {
-      const newBuf = (inputBuffer + key).slice(-5);
+      // Determine max length based on what we are editing
+      const isRegisterEdit = [DSKYMode.ENTERING_R1, DSKYMode.ENTERING_R2, DSKYMode.ENTERING_R3].includes(mode);
+      const maxLength = isRegisterEdit ? 5 : 2;
+
+      const newBuf = (inputBuffer + key).slice(-maxLength);
       setInputBuffer(newBuf);
       
+      // Update display immediately for Verb/Noun only (Standard AGC behavior typically shows entry)
+      // For Registers, we use the display logic to show buffer, but don't commit to state yet
       if (mode === DSKYMode.ENTERING_VERB) {
         setState(prev => ({ ...prev, verb: newBuf.slice(-2).padStart(2, '0') }));
       } else if (mode === DSKYMode.ENTERING_NOUN) {
@@ -194,8 +249,17 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       }, {} as Record<number, DSKYStatusItem>)
     : state.status;
 
+  // Glow Logic
   const verbGlow = isLampTest || (mode === DSKYMode.ENTERING_VERB ? isFlashing : true);
   const nounGlow = isLampTest || (mode === DSKYMode.ENTERING_NOUN ? isFlashing : true);
+  const r1Glow = isLampTest || (mode === DSKYMode.ENTERING_R1 ? isFlashing : true);
+  const r2Glow = isLampTest || (mode === DSKYMode.ENTERING_R2 ? isFlashing : true);
+  const r3Glow = isLampTest || (mode === DSKYMode.ENTERING_R3 ? isFlashing : true);
+
+  // Value Logic (Show InputBuffer if editing that specific field)
+  const r1Val = mode === DSKYMode.ENTERING_R1 ? inputBuffer.padStart(5, '0') : state.r1;
+  const r2Val = mode === DSKYMode.ENTERING_R2 ? inputBuffer.padStart(5, '0') : state.r2;
+  const r3Val = mode === DSKYMode.ENTERING_R3 ? inputBuffer.padStart(5, '0') : state.r3;
 
   return (
     <div className="dsky-panel w-full h-full p-6 rounded-xl border-4 border-[#333] flex flex-col gap-4 select-none shadow-[inset_0_2px_20px_rgba(255,255,255,0.05)] overflow-hidden">
@@ -212,9 +276,9 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
           </div>
 
           <div className="flex-[1.3] flex flex-col justify-around items-center py-1 overflow-hidden">
-            <Display sign={displaySign(state.r1Sign)} label="R1" value={displayValue(state.r1, 5)} length={5} size="lg" glow={true} />
-            <Display sign={displaySign(state.r2Sign)} label="R2" value={displayValue(state.r2, 5)} length={5} size="lg" glow={true} />
-            <Display sign={displaySign(state.r3Sign)} label="R3" value={displayValue(state.r3, 5)} length={5} size="lg" glow={true} />
+            <Display sign={displaySign(state.r1Sign)} label="R1" value={displayValue(r1Val, 5)} length={5} size="lg" glow={r1Glow} />
+            <Display sign={displaySign(state.r2Sign)} label="R2" value={displayValue(r2Val, 5)} length={5} size="lg" glow={r2Glow} />
+            <Display sign={displaySign(state.r3Sign)} label="R3" value={displayValue(r3Val, 5)} length={5} size="lg" glow={r3Glow} />
           </div>
         </div>
       </div>
