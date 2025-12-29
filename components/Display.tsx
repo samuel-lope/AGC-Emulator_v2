@@ -11,7 +11,7 @@ interface DisplayProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const Display: React.FC<DisplayProps> = ({ value, length, sign, label, glow = true, size = 'md' }) => {
+const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label, glow = true, size = 'md' }) => {
   const paddedValue = value.padStart(length, '0').slice(-length);
   
   const sizeClasses = {
@@ -71,6 +71,6 @@ const Display: React.FC<DisplayProps> = ({ value, length, sign, label, glow = tr
       </div>
     </div>
   );
-};
+});
 
 export default Display;

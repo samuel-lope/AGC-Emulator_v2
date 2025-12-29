@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
 interface Digit16SegProps {
   char: string;
@@ -30,17 +30,28 @@ const SEGMENT_MAP: Record<string, string[]> = {
   'AAAAA': ['a1', 'a2', 'f', 'b', 'g1', 'g2', 'e', 'c', 'd1', 'd2', 'h', 'i', 'j', 'k', 'l', 'm'], // All segments for test
 };
 
-const Digit16Seg: React.FC<Digit16SegProps> = ({ char, active = true, className = "" }) => {
+// Define static style objects to prevent garbage collection pressure
+const STYLE_ON = {
+  fill: '#39ff14',
+  filter: 'drop-shadow(0 0 4px rgba(57, 255, 20, 0.8)) blur(0.2px)',
+  opacity: 1,
+  transition: 'all 0.15s ease-in-out'
+};
+
+const STYLE_OFF = {
+  fill: '#1a2e1a',
+  filter: 'none',
+  opacity: 0.08,
+  transition: 'all 0.15s ease-in-out'
+};
+
+const Digit16Seg: React.FC<Digit16SegProps> = React.memo(({ char, active = true, className = "" }) => {
   const activeSegments = SEGMENT_MAP[char] || [];
 
+  // Optimized style retrieval
   const getStyle = (segId: string) => {
     const isOn = active && (activeSegments.includes(segId) || char === 'AAAAA');
-    return {
-      fill: isOn ? '#39ff14' : '#1a2e1a',
-      filter: isOn ? 'drop-shadow(0 0 4px rgba(57, 255, 20, 0.8)) blur(0.2px)' : 'none',
-      opacity: isOn ? 1 : 0.08,
-      transition: 'all 0.15s ease-in-out'
-    };
+    return isOn ? STYLE_ON : STYLE_OFF;
   };
 
   return (
@@ -76,6 +87,6 @@ const Digit16Seg: React.FC<Digit16SegProps> = ({ char, active = true, className 
       <path d="M55 90 L61 90 L80 138 L74 138 Z" style={getStyle('m')} />
     </svg>
   );
-};
+});
 
 export default Digit16Seg;

@@ -7,7 +7,7 @@ interface KeypadProps {
   compact?: boolean;
 }
 
-const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
+const Keypad: React.FC<KeypadProps> = React.memo(({ onKeyPress, compact = false }) => {
   const isFunctional = (key: string) => 
     ['VERB', 'NOUN', 'PROC', 'CLR', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key);
 
@@ -43,6 +43,6 @@ const Keypad: React.FC<KeypadProps> = ({ onKeyPress, compact = false }) => {
       ))}
     </div>
   );
-};
+});
 
 export default Keypad;
