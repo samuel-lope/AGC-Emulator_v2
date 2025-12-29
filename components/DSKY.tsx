@@ -106,6 +106,8 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       }
       
       setState(nextState);
+      // FORCE SERIAL UPDATE ON RESET
+      sendSerialUpdate(nextState);
       return;
     }
 
@@ -185,6 +187,24 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       return;
     }
 
+    // New logic for Sign (+/-) keys
+    if (key === '+' || key === '-') {
+      const sign = key as '+' | '-';
+      if (mode === DSKYMode.ENTERING_R1) {
+        setState(prev => ({ ...prev, r1Sign: sign }));
+        return;
+      }
+      if (mode === DSKYMode.ENTERING_R2) {
+        setState(prev => ({ ...prev, r2Sign: sign }));
+        return;
+      }
+      if (mode === DSKYMode.ENTERING_R3) {
+        setState(prev => ({ ...prev, r3Sign: sign }));
+        return;
+      }
+      return;
+    }
+
     if (key === 'ENTR') {
       let newState = { ...state };
       let shouldUpdate = false;
@@ -213,10 +233,8 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
 
       if (shouldUpdate) {
         setState(newState);
-        if ([DSKYMode.ENTERING_R1, DSKYMode.ENTERING_R2, DSKYMode.ENTERING_R3].includes(mode)) {
-           // For registers, we only send serial update on Enter
-           sendSerialUpdate(newState);
-        }
+        // FORCE SERIAL UPDATE ON ENTER (UNCONDITIONAL)
+        sendSerialUpdate(newState);
       }
       
       setMode(DSKYMode.IDLE);
