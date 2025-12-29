@@ -100,7 +100,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
       
       let nextState = { ...state, status: newStatus };
 
-      // Restart logic
+      // Restart logic (Triggers only if RESTART light (8) is active or LAMP test artifact)
       if (state.r1 === 'AAAAA' || state.status[8]?.active) {
          nextState = INITIAL_STATE;
       }
@@ -150,27 +150,37 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
     }
 
     if (key === 'CLR') {
-      if ([DSKYMode.ENTERING_R1, DSKYMode.ENTERING_R2, DSKYMode.ENTERING_R3].includes(mode)) {
-        setInputBuffer(''); // Just clear the buffer if editing register
+      const editingModes = [
+        DSKYMode.ENTERING_VERB, 
+        DSKYMode.ENTERING_NOUN, 
+        DSKYMode.ENTERING_R1, 
+        DSKYMode.ENTERING_R2, 
+        DSKYMode.ENTERING_R3
+      ];
+
+      // Caso 1: Se estiver editando, limpa apenas o buffer/campo atual
+      if (editingModes.includes(mode)) {
+        setInputBuffer('');
+        
+        // Atualiza visualmente o estado para Verb/Noun imediatamente para refletir o zero
+        if (mode === DSKYMode.ENTERING_VERB) {
+          setState(prev => ({ ...prev, verb: '00' }));
+        } else if (mode === DSKYMode.ENTERING_NOUN) {
+          setState(prev => ({ ...prev, noun: '00' }));
+        }
+        // Para R1/R2/R3, a limpeza do inputBuffer já é refletida no render via variável r1Val/etc
         return;
       }
 
-      const newState = {
-        ...state,
-        verb: '00',
-        noun: '00',
-        prog: '00',
-        r1: '00000',
-        r2: '00000',
-        r3: '00000',
-        r1Sign: '+' as const,
-        r2Sign: '+' as const,
-        r3Sign: '+' as const
-      };
+      // Caso 2: Se não estiver editando, acende a luz RESTART
+      // O usuário precisará pressionar RSET para efetivar o reset
+      const newStatus = { ...state.status };
+      if (newStatus[8]) {
+        newStatus[8] = { ...newStatus[8], active: true }; // 8 = RESTART
+      }
 
+      const newState = { ...state, status: newStatus };
       setState(newState);
-      setMode(DSKYMode.IDLE);
-      setInputBuffer('');
       sendSerialUpdate(newState);
       return;
     }
