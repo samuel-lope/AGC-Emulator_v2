@@ -24,8 +24,9 @@ const App: React.FC = () => {
   const serialWriterRef = useRef<WritableStreamDefaultWriter | null>(null);
   const dskyRef = useRef<DSKYHandle>(null);
 
-  const BASE_WIDTH = 1200;
-  const BASE_HEIGHT = 620;
+  // Optimized for 16:9 High-DPI screens
+  const BASE_WIDTH = 1600;
+  const BASE_HEIGHT = 900;
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -86,7 +87,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-[#0a0a0a] overflow-hidden relative">
+    <div className="h-screen w-screen flex items-center justify-center bg-[#050505] overflow-hidden relative">
       
       {/* Tela de Inicialização Vintage */}
       {isStartup && (
@@ -130,11 +131,12 @@ const App: React.FC = () => {
           opacity: isStartup ? 0 : 1, 
           filter: isStartup ? 'blur(10px)' : 'none'
         }}
-        className="flex flex-row gap-6 p-6 bg-[#1a1a1a] rounded-2xl border-2 border-[#333] shadow-[0_0_100px_rgba(0,0,0,1)] relative overflow-hidden transition-all duration-700"
+        className="flex flex-row gap-8 p-8 bg-[#151515] rounded-3xl border-4 border-[#2a2a2a] shadow-[0_0_100px_rgba(0,0,0,1)] relative overflow-hidden transition-all duration-700"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent opacity-20"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent opacity-30"></div>
         
-        <div className="w-[720px] shrink-0">
+        {/* DSKY Unit - Fixed Width for correct aspect ratio */}
+        <div className="w-[620px] shrink-0 h-full">
           <DSKY 
             ref={dskyRef}
             onSendSerial={sendSerialData} 
@@ -142,11 +144,11 @@ const App: React.FC = () => {
           />
         </div>
 
-        <div className="flex-1 flex flex-col gap-4">
-          <header className="shrink-0 flex justify-between items-end mb-1">
+        <div className="flex-1 flex flex-col gap-6 h-full min-w-0">
+          <header className="shrink-0 flex justify-between items-end border-b border-[#333] pb-4">
             <div>
-              <h1 className="text-gray-600 font-mono text-[10px] uppercase tracking-[0.4em] mb-1">Block II AGC System</h1>
-              <div className="h-px w-32 bg-gradient-to-r from-gray-800 to-transparent"></div>
+              <h1 className="text-gray-500 font-mono text-xs uppercase tracking-[0.4em] mb-1">Block II AGC System</h1>
+              <div className="h-0.5 w-32 bg-amber-600/50"></div>
             </div>
           </header>
           
@@ -158,8 +160,9 @@ const App: React.FC = () => {
             onUpdateFunctionKeys={handleUpdateFunctionKeys}
           />
 
-          <footer className="text-gray-700 font-mono text-[9px] uppercase tracking-wider opacity-40 mt-auto">
-            NASA MSC - Raytheon / MIT Simulation — Apollo Guidance Computer Replica
+          <footer className="shrink-0 text-gray-700 font-mono text-[10px] uppercase tracking-wider opacity-40 flex justify-between">
+             <span>NASA MSC - Raytheon / MIT Simulation</span>
+             <span>Rev 3.0 - 1969</span>
           </footer>
         </div>
       </div>
