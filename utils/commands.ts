@@ -75,6 +75,16 @@ export const executeProgram = (prog: string, state: DSKYState): Partial<DSKYStat
         r1: '00050', r2: '00010', r3: '00005',
         status: activate([9, 10, 7]) // tracker, alt, prog
       };
+    case 'EF': // "Extra Feature" / Credits Mode
+      return {
+        verb: '16', noun: '01',
+        // Hexadecimal pseudo-text for the registers
+        // R1: 1NF0 (INFO), R2: SYS (System), R3: 1969
+        r1: '1NF00', 
+        r2: '00545', // 545 looks a bit like SYS on 7-seg if creative, but here just raw
+        r3: '01969',
+        status: activate([0, 7, 8]) // uplink, prog, restart
+      };
     case '00':
       return { status: activate([4]) }; // opr err
     default:

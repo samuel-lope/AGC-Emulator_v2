@@ -47,7 +47,6 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   };
 
   const handleKeyPress = (key: string) => {
-    // Logic remains unchanged...
     console.log(`DSKY Internal: Key Pressed -> ${key}`);
 
     if (key.startsWith('F') && key.length > 1) {
@@ -217,39 +216,46 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   const glow = true;
 
   return (
-    <div className="dsky-panel w-full h-full p-8 rounded-xl border-4 border-[#333] flex flex-col gap-8 select-none shadow-[inset_0_2px_40px_rgba(255,255,255,0.05)] overflow-hidden">
+    <div className="dsky-panel w-full h-full p-6 rounded-xl border-4 border-[#333] flex flex-row gap-6 select-none shadow-[inset_0_2px_40px_rgba(255,255,255,0.05)] overflow-hidden">
       
-      {/* Top Section: Indicators and Displays */}
-      <div className="flex gap-6 items-stretch flex-grow min-h-0">
+      {/* Left Column: Status (Top) + Displays (Bottom) */}
+      <div className="w-[60%] flex flex-col gap-4 h-full">
         
-        {/* Left: Status Lights */}
-        <div className="w-[32%] flex flex-col shrink-0">
-          <StatusPanel status={displayStatus} />
+        {/* Status Panel Area - Compact */}
+        <div className="shrink-0">
+           <StatusPanel status={displayStatus} />
         </div>
 
-        {/* Right: Displays */}
-        <div className="flex-1 flex bg-[#050505] p-3 rounded-lg border-2 border-[#1a1a1a] shadow-[inset_0_4px_30px_rgba(0,0,0,1)]">
-          
-          {/* PROG/VERB/NOUN Column */}
-          <div className="w-[38%] flex flex-col justify-around items-center border-r border-[#222] py-2 px-1 shrink-0">
-            <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
-            <Display label="VERB" value={verbVal} length={2} glow={glow} size="md" />
-            <Display label="NOUN" value={nounVal} length={2} glow={glow} size="md" />
-          </div>
+        {/* Displays Area */}
+        <div className="flex-1 flex bg-[#050505] p-4 rounded-lg border-2 border-[#1a1a1a] shadow-[inset_0_4px_30px_rgba(0,0,0,1)] gap-2 min-h-0 overflow-hidden items-center">
+           
+           {/* Column 1: PROG / VERB / NOUN */}
+           <div className="w-[35%] flex flex-col justify-center gap-4 border-r border-[#222] pr-2 shrink-0 h-full">
+             <div className="flex flex-col gap-1">
+                <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
+             </div>
+             {/* Visual separator */}
+             <div className="h-0.5 w-1/3 bg-[#222] self-end opacity-50 rounded"></div>
+             <div className="flex flex-col gap-2">
+                <Display label="VERB" value={verbVal} length={2} glow={glow} size="md" flash={mode === DSKYMode.ENTERING_VERB} />
+                <Display label="NOUN" value={nounVal} length={2} glow={glow} size="md" flash={mode === DSKYMode.ENTERING_NOUN} />
+             </div>
+           </div>
 
-          {/* Registers Column */}
-          <div className="flex-1 flex flex-col justify-around items-center py-1 pl-2">
-            <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} />
-            <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} />
-            <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} />
-          </div>
+           {/* Column 2: Registers R1 / R2 / R3 */}
+           <div className="flex-1 flex flex-col justify-center gap-4 pl-2 min-w-0 h-full">
+             <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R1} />
+             <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R2} />
+             <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R3} />
+           </div>
         </div>
       </div>
 
-      {/* Bottom Section: Keypad */}
-      <div className="pt-4 border-t-2 border-[#444] shrink-0">
+      {/* Right Column: Keypad */}
+      <div className="w-[40%] h-full flex flex-col justify-center border-l-2 border-[#222] pl-4 border-dashed border-opacity-30">
         <Keypad onKeyPress={handleKeyPress} compact={false} />
       </div>
+
     </div>
   );
 });

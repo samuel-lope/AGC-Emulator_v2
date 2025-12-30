@@ -1,5 +1,5 @@
 
-import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import DSKY, { DSKYHandle } from './components/DSKY';
 import MissionControl from './components/MissionControl';
 import { DEFAULT_FUNCTION_KEYS } from './constants';
@@ -9,6 +9,7 @@ const App: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [isSerialConnected, setIsSerialConnected] = useState(false);
   const [isStartup, setIsStartup] = useState(true);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   
   // Estado para armazenar configurações das teclas F1-F5
   const [functionKeys, setFunctionKeys] = useState<Record<string, FunctionKeyConfig>>(() => {
@@ -24,15 +25,15 @@ const App: React.FC = () => {
   const serialWriterRef = useRef<WritableStreamDefaultWriter | null>(null);
   const dskyRef = useRef<DSKYHandle>(null);
 
-  // Optimized for 16:9 High-DPI screens
-  const BASE_WIDTH = 1600;
-  const BASE_HEIGHT = 900;
+  // Optimized for 16:9 Full HD screens
+  const BASE_WIDTH = 1920;
+  const BASE_HEIGHT = 1080;
 
   useLayoutEffect(() => {
     const handleResize = () => {
       const scaleX = window.innerWidth / BASE_WIDTH;
       const scaleY = window.innerHeight / BASE_HEIGHT;
-      const newScale = Math.min(scaleX, scaleY) * 0.95;
+      const newScale = Math.min(scaleX, scaleY) * 0.98; // Slightly larger fit
       setScale(newScale);
     };
 
@@ -76,10 +77,24 @@ const App: React.FC = () => {
     setIsStartup(false);
   };
 
-  const sendSerialData = async (data: string) => {
+  // Intercept DSKY updates to handle Serial and 'EF' Program Logic
+  const handleDSKYUpdate = async (dataString: string) => {
+    // 1. Check for 'EF' Program (Info/Credits Modal)
+    try {
+      const data = JSON.parse(dataString);
+      if (data.PROG === 'EF') {
+        setShowInfoModal(true);
+      } else {
+        setShowInfoModal(false);
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+
+    // 2. Send to Serial Port
     if (serialWriterRef.current) {
       try {
-        await serialWriterRef.current.write(data + "\n");
+        await serialWriterRef.current.write(dataString + "\n");
       } catch (err) {
         console.error('Serial write error:', err);
       }
@@ -121,6 +136,41 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* MODAL 'EF' - Now contains Mission Control */}
+      {showInfoModal && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-[1000px] h-[700px] relative flex flex-col shadow-[0_0_100px_rgba(217,119,6,0.2)]">
+            
+            <div className="absolute top-0 left-0 w-full h-1 bg-amber-600 z-50"></div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-amber-600 z-50"></div>
+            
+            {/* Header do Modal */}
+             <div className="flex justify-between items-end bg-[#1a1a1a] px-8 pt-6 pb-4 border-b border-amber-900/50 shrink-0">
+              <div>
+                <h2 className="text-3xl text-amber-500 font-bold uppercase tracking-[0.2em]">System Operations</h2>
+                <p className="text-gray-500 text-xs mt-1">Mission Control Interface</p>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-gray-600 uppercase">To close interface</div>
+                <div className="text-amber-500 font-bold text-sm">PROG 00 (V37 + 00 + ENTR)</div>
+              </div>
+            </div>
+
+            {/* Conteúdo do Modal: Mission Control Completo */}
+            <div className="flex-1 bg-[#0a0a0a] overflow-hidden flex">
+               <MissionControl 
+                onConnectSerial={connectSerial} 
+                onSendSerial={handleDSKYUpdate}
+                isSerialConnected={isSerialConnected} 
+                functionKeys={functionKeys}
+                onUpdateFunctionKeys={handleUpdateFunctionKeys}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Container - Centered DSKY Only */}
       <div 
         style={{ 
           width: `${BASE_WIDTH}px`, 
@@ -131,39 +181,17 @@ const App: React.FC = () => {
           opacity: isStartup ? 0 : 1, 
           filter: isStartup ? 'blur(10px)' : 'none'
         }}
-        className="flex flex-row gap-8 p-8 bg-[#151515] rounded-3xl border-4 border-[#2a2a2a] shadow-[0_0_100px_rgba(0,0,0,1)] relative overflow-hidden transition-all duration-700"
+        className="flex items-center justify-center relative transition-all duration-700"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent opacity-30"></div>
+        <div className="absolute inset-0 bg-radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%) -z-10"></div>
         
-        {/* DSKY Unit - Fixed Width for correct aspect ratio */}
-        <div className="w-[620px] shrink-0 h-full">
+        {/* DSKY Unit - Resized for horizontal proportion */}
+        <div className="w-[1024px] h-[580px] relative z-10 shadow-[0_0_150px_rgba(0,0,0,0.8)]">
           <DSKY 
             ref={dskyRef}
-            onSendSerial={sendSerialData} 
+            onSendSerial={handleDSKYUpdate} 
             functionKeys={functionKeys}
           />
-        </div>
-
-        <div className="flex-1 flex flex-col gap-6 h-full min-w-0">
-          <header className="shrink-0 flex justify-between items-end border-b border-[#333] pb-4">
-            <div>
-              <h1 className="text-gray-500 font-mono text-xs uppercase tracking-[0.4em] mb-1">Block II AGC System</h1>
-              <div className="h-0.5 w-32 bg-amber-600/50"></div>
-            </div>
-          </header>
-          
-          <MissionControl 
-            onConnectSerial={connectSerial} 
-            onSendSerial={sendSerialData}
-            isSerialConnected={isSerialConnected} 
-            functionKeys={functionKeys}
-            onUpdateFunctionKeys={handleUpdateFunctionKeys}
-          />
-
-          <footer className="shrink-0 text-gray-700 font-mono text-[10px] uppercase tracking-wider opacity-40 flex justify-between">
-             <span>NASA MSC - Raytheon / MIT Simulation</span>
-             <span>Rev 3.0 - 1969</span>
-          </footer>
         </div>
       </div>
     </div>

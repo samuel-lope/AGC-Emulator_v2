@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { VERB_DICT, NOUN_DICT } from '../utils/commands';
 import { FunctionKeyConfig, DSKYStatusItem } from '../types';
 import { STATUS_LABELS } from '../constants';
+import { VERB_DICT, NOUN_DICT } from '../utils/commands';
 
 interface MissionControlProps {
   onConnectSerial?: () => void;
@@ -19,7 +19,7 @@ const MissionControl: React.FC<MissionControlProps> = ({
   functionKeys = {},
   onUpdateFunctionKeys
 }) => {
-  const [activeTab, setActiveTab] = useState<'DOCS' | 'PROGRAMMER' | 'UPLINK'>('DOCS');
+  const [activeTab, setActiveTab] = useState<'MANUAL' | 'PROGRAMMER' | 'UPLINK'>('MANUAL');
   const [editingKey, setEditingKey] = useState<string>('F1');
 
   // Uplink State
@@ -169,26 +169,26 @@ const MissionControl: React.FC<MissionControlProps> = ({
   const currentConfig = functionKeys[editingKey];
 
   return (
-    <div className="flex-1 w-full bg-[#0a0a0a] p-5 rounded-xl border border-[#222] font-mono shadow-inner overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between mb-4 border-b border-[#222] pb-2 shrink-0">
+    <div className="flex-1 w-full bg-[#0a0a0a] p-8 font-mono overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between mb-6 border-b border-[#222] pb-2 shrink-0">
         
         {/* Navigation Tabs */}
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setActiveTab('DOCS')}
-            className={`text-xs font-bold uppercase tracking-widest pb-1 transition-colors ${activeTab === 'DOCS' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
+        <div className="flex gap-6">
+           <button 
+            onClick={() => setActiveTab('MANUAL')}
+            className={`text-xs font-bold uppercase tracking-widest pb-2 transition-colors ${activeTab === 'MANUAL' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
           >
-            Mission Logs
+            Manual
           </button>
           <button 
             onClick={() => setActiveTab('PROGRAMMER')}
-            className={`text-xs font-bold uppercase tracking-widest pb-1 transition-colors ${activeTab === 'PROGRAMMER' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
+            className={`text-xs font-bold uppercase tracking-widest pb-2 transition-colors ${activeTab === 'PROGRAMMER' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
           >
             Programmer
           </button>
           <button 
             onClick={() => setActiveTab('UPLINK')}
-            className={`text-xs font-bold uppercase tracking-widest pb-1 transition-colors ${activeTab === 'UPLINK' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
+            className={`text-xs font-bold uppercase tracking-widest pb-2 transition-colors ${activeTab === 'UPLINK' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-gray-600 hover:text-gray-400'}`}
           >
             Uplink
           </button>
@@ -213,60 +213,78 @@ const MissionControl: React.FC<MissionControlProps> = ({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-        
-        {/* VIEW: DOCS & LOGS */}
-        {activeTab === 'DOCS' && (
-          <div className="space-y-5 animate-in fade-in duration-300">
-            <section>
-              <h4 className="text-gray-400 text-[10px] uppercase mb-2 border-l-2 border-amber-500 pl-2">System Operations</h4>
-              <p className="text-gray-500 text-[11px] leading-relaxed mb-3">
-                Press <span className="text-gray-300">VERB</span> + (2 digits) → <span className="text-gray-300">NOUN</span> + (2 digits) → <span className="text-gray-300">ENTR</span>.
-              </p>
-              <div className="bg-[#111] p-3 rounded text-[10px] text-amber-200/60 border border-white/5">
-                <span className="block mb-1 text-amber-600 font-bold uppercase">Function Keys (Macros):</span>
-                <ul className="list-none space-y-1">
-                  {Object.values(functionKeys).map((fn: FunctionKeyConfig) => (
-                    <li key={fn.key} className="flex justify-between border-b border-white/5 pb-0.5">
-                      <span className="text-amber-500 font-bold">{fn.key}</span>
-                      <span>{fn.label || 'Empty'}</span>
-                    </li>
-                  ))}
-                </ul>
+      <div className="flex-1 overflow-y-auto custom-scrollbar relative pr-2">
+
+        {/* VIEW: MANUAL (REFERENCE) */}
+        {activeTab === 'MANUAL' && (
+           <div className="animate-in fade-in duration-300 grid grid-cols-2 gap-8">
+              {/* Left Column */}
+              <div className="space-y-6">
+                <section>
+                  <h4 className="text-gray-400 text-xs uppercase mb-3 border-l-2 border-amber-500 pl-2">Basic Syntax</h4>
+                  <p className="text-gray-300 text-xs leading-relaxed bg-[#111] p-3 rounded border border-white/5">
+                    Standard Sequence: <br/>
+                    <span className="text-amber-500 font-bold">VERB</span> + (2 digits) → <span className="text-amber-500 font-bold">NOUN</span> + (2 digits) → <span className="text-amber-500 font-bold">ENTR</span>.
+                  </p>
+                </section>
+
+                <section>
+                  <h4 className="text-gray-400 text-xs uppercase mb-3 border-l-2 border-amber-500 pl-2">Function Keys (Macros)</h4>
+                  <div className="bg-[#111] rounded border border-white/5 overflow-hidden">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-white/5 text-amber-600">
+                        <tr>
+                          <th className="p-2 pl-3">Key</th>
+                          <th className="p-2">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {Object.values(functionKeys).map((fn: FunctionKeyConfig) => (
+                          <tr key={fn.key} className="text-gray-400">
+                            <td className="p-2 pl-3 text-amber-500 font-bold">{fn.key}</td>
+                            <td className="p-2">{fn.label || 'Unassigned'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
               </div>
-            </section>
 
-            <div className="grid grid-cols-2 gap-4">
-              <section>
-                <h4 className="text-gray-400 text-[10px] uppercase mb-2 border-l-2 border-amber-500 pl-2">Verbs</h4>
-                <div className="space-y-1.5">
-                  {Object.entries(VERB_DICT).map(([code, desc]) => (
-                    <div key={code} className="flex flex-col text-[10px] border-b border-white/5 pb-1">
-                      <span className="text-amber-500 font-bold">V{code}</span>
-                      <span className="text-gray-500 truncate">{desc}</span>
+              {/* Right Column */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <section>
+                    <h4 className="text-gray-400 text-xs uppercase mb-3 border-l-2 border-amber-500 pl-2">Verbs</h4>
+                    <div className="space-y-2">
+                      {Object.entries(VERB_DICT).map(([code, desc]) => (
+                        <div key={code} className="flex flex-col text-xs border-b border-white/5 pb-1">
+                          <span className="text-amber-500 font-bold">V{code}</span>
+                          <span className="text-gray-500 text-[10px] truncate">{desc}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </section>
+                  </section>
 
-              <section>
-                <h4 className="text-gray-400 text-[10px] uppercase mb-2 border-l-2 border-amber-500 pl-2">Nouns</h4>
-                <div className="space-y-1.5">
-                  {Object.entries(NOUN_DICT).map(([code, desc]) => (
-                    <div key={code} className="flex flex-col text-[10px] border-b border-white/5 pb-1">
-                      <span className="text-amber-500 font-bold">N{code}</span>
-                      <span className="text-gray-500 truncate">{desc}</span>
+                  <section>
+                    <h4 className="text-gray-400 text-xs uppercase mb-3 border-l-2 border-amber-500 pl-2">Nouns</h4>
+                    <div className="space-y-2">
+                      {Object.entries(NOUN_DICT).map(([code, desc]) => (
+                        <div key={code} className="flex flex-col text-xs border-b border-white/5 pb-1">
+                          <span className="text-amber-500 font-bold">N{code}</span>
+                          <span className="text-gray-500 text-[10px] truncate">{desc}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </section>
                 </div>
-              </section>
-            </div>
-          </div>
+              </div>
+           </div>
         )}
-
+        
         {/* VIEW: PROGRAMMER (EDITOR) */}
         {activeTab === 'PROGRAMMER' && currentConfig && (
-          <div className="space-y-4 animate-in fade-in duration-300 h-full flex flex-col">
+          <div className="space-y-6 animate-in fade-in duration-300 max-w-2xl mx-auto">
             
             {/* Key Selector */}
             <div className="flex gap-2 p-1 bg-[#111] rounded border border-[#222]">
@@ -285,60 +303,61 @@ const MissionControl: React.FC<MissionControlProps> = ({
               ))}
             </div>
 
-            <div className="flex-1 space-y-4 pr-1">
+            <div className="space-y-6">
               
               {/* Label */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[9px] text-gray-500 uppercase tracking-widest">Macro Label</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest border-l-2 border-amber-500 pl-2">Macro Identification</label>
                 <input 
                   type="text" 
                   value={currentConfig.label}
                   onChange={(e) => handleConfigChange('label', e.target.value)}
-                  className="bg-[#050505] border border-[#333] text-amber-100 text-xs p-2 rounded focus:border-amber-500 focus:outline-none font-mono"
+                  className="bg-[#050505] border border-[#333] text-amber-100 text-xs p-3 rounded focus:border-amber-500 focus:outline-none font-mono"
                   placeholder="e.g. Orbit Insert"
                 />
               </div>
 
               {/* Registers Grid */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-gray-500 uppercase">VERB</label>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[9px] text-gray-500 uppercase font-bold text-center">VERB</label>
                   <input 
                     type="text" maxLength={2}
                     value={currentConfig.verb}
                     onChange={(e) => handleConfigChange('verb', e.target.value.toUpperCase())}
-                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold p-1 rounded focus:border-[#39ff14] focus:outline-none"
+                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold text-lg p-2 rounded focus:border-[#39ff14] focus:outline-none shadow-inner"
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-gray-500 uppercase">NOUN</label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[9px] text-gray-500 uppercase font-bold text-center">NOUN</label>
                   <input 
                     type="text" maxLength={2}
                     value={currentConfig.noun}
                     onChange={(e) => handleConfigChange('noun', e.target.value.toUpperCase())}
-                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold p-1 rounded focus:border-[#39ff14] focus:outline-none"
+                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold text-lg p-2 rounded focus:border-[#39ff14] focus:outline-none shadow-inner"
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-gray-500 uppercase">PROG</label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[9px] text-gray-500 uppercase font-bold text-center">PROG</label>
                   <input 
                     type="text" maxLength={2}
                     value={currentConfig.prog}
                     onChange={(e) => handleConfigChange('prog', e.target.value.toUpperCase())}
-                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold p-1 rounded focus:border-[#39ff14] focus:outline-none"
+                    className="bg-[#050505] border border-[#333] text-[#39ff14] text-center font-bold text-lg p-2 rounded focus:border-[#39ff14] focus:outline-none shadow-inner"
                   />
                 </div>
               </div>
 
               {/* Data Registers */}
-              <div className="space-y-2 bg-[#111] p-3 rounded border border-[#222]">
+              <div className="space-y-3 bg-[#111] p-4 rounded border border-[#222]">
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-2">Register Values</label>
                 {['r1', 'r2', 'r3'].map((reg) => (
-                  <div key={reg} className="flex items-center gap-2">
-                    <label className="text-[9px] text-gray-500 uppercase w-4 font-bold">{reg.toUpperCase()}</label>
+                  <div key={reg} className="flex items-center gap-3">
+                    <label className="text-xs text-gray-400 uppercase w-6 font-bold">{reg.toUpperCase()}</label>
                     <select
                       value={currentConfig[`${reg}Sign` as keyof FunctionKeyConfig] as string}
                       onChange={(e) => handleConfigChange(`${reg}Sign` as keyof FunctionKeyConfig, e.target.value)}
-                      className="bg-[#050505] text-[#39ff14] border border-[#333] rounded text-xs p-1 focus:outline-none"
+                      className="bg-[#050505] text-[#39ff14] border border-[#333] rounded text-sm p-1.5 focus:outline-none"
                     >
                       <option value="+">+</option>
                       <option value="-">-</option>
@@ -348,7 +367,7 @@ const MissionControl: React.FC<MissionControlProps> = ({
                       type="text" maxLength={5}
                       value={currentConfig[reg as keyof FunctionKeyConfig] as string}
                       onChange={(e) => handleConfigChange(reg as keyof FunctionKeyConfig, e.target.value.toUpperCase())}
-                      className="flex-1 bg-[#050505] border border-[#333] text-[#39ff14] font-mono tracking-widest p-1 rounded focus:border-[#39ff14] focus:outline-none"
+                      className="flex-1 bg-[#050505] border border-[#333] text-[#39ff14] font-mono tracking-[0.2em] text-lg p-1.5 rounded focus:border-[#39ff14] focus:outline-none"
                     />
                   </div>
                 ))}
@@ -356,34 +375,32 @@ const MissionControl: React.FC<MissionControlProps> = ({
 
               {/* Status Flags Checkboxes */}
               <div>
-                <div className="flex items-end justify-between mb-2">
-                  <label className="text-[9px] text-gray-500 uppercase tracking-widest block">Status Indicators</label>
+                <div className="flex items-end justify-between mb-3">
+                  <label className="text-[9px] text-gray-500 uppercase tracking-widest block border-l-2 border-amber-500 pl-2">Status Indicators</label>
                   <div className="flex gap-2">
                      <button
                       onClick={handleResetStatusDefaults}
-                      className="text-[8px] bg-[#1a1a1a] border border-[#333] text-gray-500 px-2 py-0.5 rounded hover:bg-[#222] hover:text-gray-300 hover:border-gray-500 transition-colors uppercase"
-                      title="Reset names and colors to factory defaults"
+                      className="text-[8px] bg-[#1a1a1a] border border-[#333] text-gray-500 px-2 py-1 rounded hover:bg-[#222] hover:text-gray-300 hover:border-gray-500 transition-colors uppercase"
                     >
                       Reset Defaults
                     </button>
                     <button
                       onClick={handleReplicateStatus}
-                      className="text-[8px] bg-amber-900/20 border border-amber-900/40 text-amber-600 px-2 py-0.5 rounded hover:bg-amber-900/40 hover:text-amber-500 hover:border-amber-600 transition-colors uppercase"
-                      title="Copy this status configuration to all F-keys"
+                      className="text-[8px] bg-amber-900/20 border border-amber-900/40 text-amber-600 px-2 py-1 rounded hover:bg-amber-900/40 hover:text-amber-500 hover:border-amber-600 transition-colors uppercase"
                     >
                       Apply to All
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-1.5 bg-[#111] p-2 rounded border border-[#222]">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-[#111] p-3 rounded border border-[#222]">
                   {Object.entries(currentConfig.status)
                     .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
                     .map(([idStr, val]) => {
                       const config = val as DSKYStatusItem;
                       const id = parseInt(idStr);
                       return (
-                        <div key={id} className="flex items-center gap-2 border-b border-white/5 pb-1.5 mb-1.5 last:mb-0 last:border-0 last:pb-0">
+                        <div key={id} className="flex items-center gap-2 border-b border-white/5 pb-1 last:border-0">
                           <label className="cursor-pointer group flex items-center">
                             <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-colors ${config.active ? 'bg-amber-600 border-amber-600' : 'border-[#444] group-hover:border-amber-500'}`}>
                               {config.active && <div className="w-2 h-2 bg-black rounded-[1px]"></div>}
@@ -395,16 +412,16 @@ const MissionControl: React.FC<MissionControlProps> = ({
                               onChange={(e) => handleStatusChange(id, 'active', e.target.checked)}
                             />
                           </label>
-                          <span className="text-[8px] text-gray-600 font-mono w-4 text-center">{id}</span>
+                          <span className="text-[9px] text-gray-600 font-mono w-4 text-center">{id}</span>
                           <input 
                             type="text" 
-                            className="flex-1 bg-[#050505] border border-[#333] text-[9px] text-gray-300 px-1.5 py-0.5 rounded focus:border-amber-500 focus:outline-none font-mono uppercase"
+                            className="flex-1 bg-[#050505] border border-[#333] text-[10px] text-gray-300 px-1.5 py-0.5 rounded focus:border-amber-500 focus:outline-none font-mono uppercase"
                             value={config.label}
                             onChange={(e) => handleStatusChange(id, 'label', e.target.value)}
                           />
                           <button
                             onClick={() => handleStatusChange(id, 'color', config.color === 'red' ? 'amber' : 'red')}
-                            className={`w-12 h-4 rounded text-[8px] font-bold uppercase transition-all flex items-center justify-center border ${
+                            className={`w-10 h-4 rounded text-[8px] font-bold uppercase transition-all flex items-center justify-center border ${
                               config.color === 'red' 
                                 ? 'bg-red-900/50 text-red-400 border-red-800 hover:bg-red-900' 
                                 : 'bg-amber-900/50 text-amber-400 border-amber-800 hover:bg-amber-900'
@@ -423,13 +440,13 @@ const MissionControl: React.FC<MissionControlProps> = ({
 
         {/* VIEW: UPLINK (FILE SENDER) */}
         {activeTab === 'UPLINK' && (
-           <div className="space-y-4 animate-in fade-in duration-300 h-full flex flex-col">
+           <div className="space-y-6 animate-in fade-in duration-300 h-full flex flex-col max-w-2xl mx-auto">
               <section>
-                <h4 className="text-gray-400 text-[10px] uppercase mb-2 border-l-2 border-amber-500 pl-2">Data Transmission</h4>
+                <h4 className="text-gray-400 text-[10px] uppercase mb-4 border-l-2 border-amber-500 pl-2">Data Transmission</h4>
                 
                 {/* File Input */}
-                <div className="mb-3">
-                  <div className="flex items-center gap-2 p-2 bg-[#111] border border-[#333] rounded">
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 p-3 bg-[#111] border border-[#333] rounded">
                     <input 
                       type="file" 
                       id="file-upload" 
@@ -440,7 +457,7 @@ const MissionControl: React.FC<MissionControlProps> = ({
                     <label 
                       htmlFor="file-upload" 
                       className={`
-                        flex-1 text-[10px] uppercase font-bold py-1.5 px-3 rounded cursor-pointer text-center transition-colors
+                        flex-1 text-xs uppercase font-bold py-3 px-4 rounded cursor-pointer text-center transition-colors
                         ${isSerialConnected 
                           ? 'bg-[#222] text-amber-500 hover:bg-[#333] border border-amber-900/30' 
                           : 'bg-[#1a1a1a] text-gray-600 cursor-not-allowed border border-[#222]'}
@@ -452,14 +469,14 @@ const MissionControl: React.FC<MissionControlProps> = ({
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center gap-2 flex-1">
-                    <label className="text-[9px] text-gray-500 uppercase">Delay (ms)</label>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-500 uppercase">Delay (ms)</label>
                     <input 
                       type="number" 
                       value={uploadDelay}
                       onChange={(e) => setUploadDelay(parseInt(e.target.value) || 0)}
-                      className="w-16 bg-[#050505] border border-[#333] text-amber-500 text-[10px] p-1 rounded focus:border-amber-500 focus:outline-none text-center"
+                      className="w-20 bg-[#050505] border border-[#333] text-amber-500 text-xs p-2 rounded focus:border-amber-500 focus:outline-none text-center"
                       min="0" max="1000"
                     />
                   </div>
@@ -467,7 +484,7 @@ const MissionControl: React.FC<MissionControlProps> = ({
                     onClick={handleSendFile}
                     disabled={!selectedFile || isUploading || !isSerialConnected}
                     className={`
-                      px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-2
+                      flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2
                       ${!selectedFile || isUploading || !isSerialConnected
                         ? 'bg-[#1a1a1a] text-gray-600 cursor-not-allowed'
                         : 'bg-amber-700/20 text-amber-500 border border-amber-600/50 hover:bg-amber-600/30'}
@@ -478,28 +495,28 @@ const MissionControl: React.FC<MissionControlProps> = ({
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-2 bg-[#111] rounded overflow-hidden border border-[#222] mb-1">
+                <div className="h-4 bg-[#111] rounded overflow-hidden border border-[#222] mb-1 relative">
                   <div 
                     className="h-full bg-amber-600 transition-all duration-100 ease-linear"
                     style={{ width: `${uploadProgress}%` }}
                   ></div>
-                </div>
-                <div className="text-right text-[9px] text-gray-500 font-mono mb-4">
-                  {uploadProgress}% COMPLETE
+                  <div className="absolute inset-0 flex items-center justify-center text-[9px] text-white font-mono mix-blend-difference">
+                    {uploadProgress}%
+                  </div>
                 </div>
               </section>
 
               {/* Terminal */}
               <section className="flex-1 flex flex-col min-h-0">
-                <h4 className="text-gray-400 text-[10px] uppercase mb-1">Telemetry Monitor</h4>
+                <h4 className="text-gray-400 text-[10px] uppercase mb-2">Telemetry Monitor</h4>
                 <div 
                   ref={terminalRef}
-                  className="flex-1 bg-black border border-[#333] rounded p-2 font-mono text-[10px] overflow-y-auto custom-scrollbar shadow-inner"
+                  className="flex-1 bg-black border border-[#333] rounded p-4 font-mono text-xs overflow-y-auto custom-scrollbar shadow-inner"
                 >
                   {terminalLogs.length === 0 && <span className="text-gray-700 italic">Ready for input...</span>}
                   {terminalLogs.map((log, idx) => (
-                    <div key={idx} className="mb-0.5 leading-tight break-all">
-                      <span className="text-gray-600 mr-2">[{log.time}]</span>
+                    <div key={idx} className="mb-1 leading-snug break-all border-b border-white/5 pb-0.5 last:border-0">
+                      <span className="text-gray-600 mr-3 text-[10px] uppercase">[{log.time}]</span>
                       <span className={`
                         ${log.type === 'tx' ? 'text-amber-300' : ''}
                         ${log.type === 'sys' ? 'text-blue-400' : ''}

@@ -18,7 +18,7 @@ const Keypad: React.FC<KeypadProps> = React.memo(({ onKeyPress, compact = false 
   };
 
   return (
-    <div className={`grid grid-cols-6 gap-4 ${compact ? 'p-2' : 'p-6'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222]`}>
+    <div className={`grid grid-cols-6 gap-4 ${compact ? 'p-2' : 'p-6'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222] h-full content-center`}>
       {KEYPAD_LAYOUT.flat().map((key, i) => (
         key ? (
           <button
@@ -26,12 +26,12 @@ const Keypad: React.FC<KeypadProps> = React.memo(({ onKeyPress, compact = false 
             onClick={() => onKeyPress(key)}
             className={`
               dsky-button rounded-sm flex flex-col items-center justify-center font-mono font-bold
-              ${compact ? 'h-10 text-[9px]' : 'h-20 text-[18px]'}
+              ${compact ? 'h-10 text-[9px]' : 'h-20 text-xl'} 
               ${getLabelColor(key)}
-              cursor-pointer select-none active:scale-[0.98]
+              cursor-pointer select-none active:scale-[0.98] w-full
             `}
           >
-            <span className={`${!isFunctional(key) ? 'text-2xl' : 'text-sm'} leading-tight`}>
+            <span className={`${!isFunctional(key) ? 'text-3xl' : 'text-lg'} leading-tight tracking-wider`}>
               {key}
             </span>
             {isFunctional(key) && (
