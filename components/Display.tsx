@@ -28,25 +28,28 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
   // Split into individual characters for component mapping
   const chars = displayString.split('');
 
-  // Size definitions for the containers, not the text
+  // Size definitions refactored for better fit within 1024px layout
+  // Reduced widths and heights to prevent overflow
   const sizeClasses = {
     sm: { 
       label: 'w-8 text-[9px]', 
-      container: 'h-10 px-1 gap-[1px]', 
-      digitWidth: 'w-4',
-      signWidth: 'w-3'
+      container: 'h-8 px-1 gap-[1px]', 
+      digitWidth: 'w-3',
+      signWidth: 'w-2'
     },
     md: { 
-      label: 'w-12 text-[11px]', 
-      container: 'h-16 px-3 gap-1',
-      digitWidth: 'w-9',
-      signWidth: 'w-8'
+      // Used for PROG, VERB, NOUN
+      label: 'w-10 text-[10px]', 
+      container: 'h-14 px-2 gap-0.5', // Reduced from h-16
+      digitWidth: 'w-8', // Reduced from w-9
+      signWidth: 'w-6'
     },
     lg: { 
-      label: 'w-12 text-[13px]', 
-      container: 'h-20 px-4 gap-1.5',
-      digitWidth: 'w-11',
-      signWidth: 'w-10'
+      // Used for R1, R2, R3
+      label: 'w-10 text-[11px]', 
+      container: 'h-16 px-2 gap-1', // Reduced from h-20, px-4
+      digitWidth: 'w-8', // Reduced from w-11
+      signWidth: 'w-7'  // Reduced from w-10
     }
   }[size];
 
@@ -54,7 +57,7 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
     <div className="flex items-center w-full justify-end min-w-0">
       {/* Label (PROG, NOUN, etc) */}
       {label && (
-        <span className={`${sizeClasses.label} text-[#888] font-engraved font-bold tracking-widest uppercase text-right leading-none shrink-0 mr-3 text-shadow-sm`}>
+        <span className={`${sizeClasses.label} text-[#888] font-engraved font-bold tracking-widest uppercase text-right leading-none shrink-0 mr-2 text-shadow-sm`}>
           {label}
         </span>
       )}
@@ -66,6 +69,7 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
         shadow-[inset_0_2px_5px_rgba(0,0,0,1),0_1px_0_rgba(255,255,255,0.05)]
         border-b border-[#1a1a1a]
         border-t border-[#000]
+        max-w-full
       `}>
         
         {/* Subtle Mesh Grid Background behind the glass */}
@@ -79,11 +83,11 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
 
         {/* SIGN SLOT (Only rendered if sign prop is passed) */}
         {sign !== undefined && (
-          <div className={`relative h-[85%] ${sizeClasses.signWidth} flex items-center justify-center z-10`}>
+          <div className={`relative h-[90%] ${sizeClasses.signWidth} flex items-center justify-center z-10`}>
              <Digit16Seg char={sign} active={true} className={glow ? 'drop-shadow-[0_0_5px_rgba(50,255,50,0.5)]' : ''} />
              
              {/* Physical partition line between sign and numbers */}
-             <div className="absolute right-[-4px] top-1 bottom-1 w-[1px] bg-[#111]"></div>
+             <div className="absolute right-[-2px] top-1 bottom-1 w-[1px] bg-[#111]"></div>
           </div>
         )}
 
@@ -94,7 +98,7 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
            const shouldBeActive = !isFlashing;
 
            return (
-            <div key={index} className={`relative h-[85%] ${sizeClasses.digitWidth} flex items-center justify-center z-10`}>
+            <div key={index} className={`relative h-[90%] ${sizeClasses.digitWidth} flex items-center justify-center z-10`}>
               <Digit16Seg 
                 char={char} 
                 active={shouldBeActive} 

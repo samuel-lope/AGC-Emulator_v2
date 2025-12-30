@@ -229,7 +229,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
         <div className="absolute bottom-3 left-3 screw"></div>
         <div className="absolute bottom-3 right-3 screw"></div>
 
-        {/* Left Column: Status (Top) + Displays (Bottom) - Reduced to 55% */}
+        {/* Left Column: Status (Top) + Displays (Bottom) - 55% of Width */}
         <div className="w-[55%] flex flex-col gap-6 h-full relative z-10">
           
           {/* Status Panel Area */}
@@ -238,13 +238,13 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
           </div>
 
           {/* Displays Area (Beveled Housing) */}
-          <div className="flex-1 flex bg-[#050505] p-6 rounded border-4 border-[#0a0a0a] shadow-[inset_0_0_20px_rgba(0,0,0,1)] gap-6 min-h-0 overflow-hidden items-center relative glass-panel">
+          <div className="flex-1 flex bg-[#050505] p-6 rounded border-4 border-[#0a0a0a] shadow-[inset_0_0_20px_rgba(0,0,0,1)] gap-4 min-h-0 overflow-hidden items-center relative glass-panel">
              
-             {/* Divider Line */}
-             <div className="absolute top-0 bottom-0 left-[38%] w-0.5 bg-[#222] opacity-50 border-l border-black border-r border-white/10"></div>
+             {/* Divider Line: Moved to 30% to give more space to R1/R2/R3 */}
+             <div className="absolute top-0 bottom-0 left-[30%] w-0.5 bg-[#222] opacity-50 border-l border-black border-r border-white/10"></div>
 
-             {/* Column 1: PROG / VERB / NOUN */}
-             <div className="w-[38%] flex flex-col justify-center gap-6 pr-4 shrink-0 h-full relative">
+             {/* Column 1: PROG / VERB / NOUN (30%) */}
+             <div className="w-[30%] flex flex-col justify-center gap-6 pr-2 shrink-0 h-full relative">
                <div className="flex flex-col gap-1">
                   <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
                </div>
@@ -255,8 +255,8 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
                </div>
              </div>
 
-             {/* Column 2: Registers R1 / R2 / R3 */}
-             <div className="flex-1 flex flex-col justify-center gap-6 pl-4 min-w-0 h-full">
+             {/* Column 2: Registers R1 / R2 / R3 (70%) */}
+             <div className="flex-1 flex flex-col justify-center gap-6 pl-2 min-w-0 h-full">
                <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R1} />
                <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R2} />
                <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R3} />
@@ -264,9 +264,9 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
           </div>
         </div>
 
-        {/* Right Column: Keypad - Increased to 45% and reduced padding */}
+        {/* Right Column: Keypad - 45% of Width */}
         <div className="w-[45%] h-full flex flex-col justify-center relative z-10 pl-2 border-l border-white/5 shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]">
-           {/* Engraved Label - Repositioned slightly */}
+           {/* Engraved Label */}
            <div className="absolute top-2 right-2 text-[#666] font-engraved text-[10px] tracking-widest opacity-50 uppercase z-0">
               Raytheon
            </div>
