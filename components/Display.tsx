@@ -12,13 +12,11 @@ interface DisplayProps {
 }
 
 const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label, glow = true, size = 'md', flash = false }) => {
-  // Ensure value fits and format it
   const isNumeric = /^\d+$/.test(value);
   const displayValue = isNumeric 
     ? value.padStart(length, '0').slice(-length) 
     : value.padStart(length, ' ').slice(-length);
 
-  // Adjusted sizes for cleaner horizontal layout (slightly more compact)
   const sizeClasses = {
     sm: { 
       label: 'w-8 text-[10px]', 
@@ -27,16 +25,14 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
       gap: 'gap-1'
     },
     md: { 
-      // Used for PROG, VERB, NOUN
-      label: 'w-10 text-xs', 
-      box: 'h-16 px-2', // Reduced from h-20
+      label: 'w-10 text-[11px]', 
+      box: 'h-16 px-3',
       text: 'text-5xl leading-none', 
       gap: 'gap-2'
     },
     lg: { 
-      // Used for Registers (R1, R2, R3)
-      label: 'w-10 text-sm', 
-      box: 'h-20 px-3', // Reduced from h-24
+      label: 'w-10 text-[13px]', 
+      box: 'h-20 px-4',
       text: 'text-6xl leading-none', 
       gap: 'gap-3'
     }
@@ -45,38 +41,47 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
   return (
     <div className={`flex items-center ${sizeClasses.gap} w-full justify-end group min-w-0`}>
       {label && (
-        <span className={`${sizeClasses.label} text-gray-500 font-mono font-bold tracking-wider uppercase text-right leading-none shrink-0 opacity-60 group-hover:opacity-100 transition-opacity duration-300`}>
+        <span className={`${sizeClasses.label} text-[#888] font-engraved font-bold tracking-widest uppercase text-right leading-none shrink-0 text-shadow-sm`}>
           {label}
         </span>
       )}
+      
+      {/* The physical display window */}
       <div className={`
-        relative flex items-center justify-end bg-[#050505] ${sizeClasses.box} 
-        border-t-2 border-l-2 border-[#000] border-b border-r border-[#222]
-        rounded-sm shadow-[inset_0_4px_10px_rgba(0,0,0,1),0_1px_2px_rgba(255,255,255,0.02)]
-        overflow-hidden flex-1 min-w-0
+        relative flex items-center justify-end bg-[#020202] ${sizeClasses.box} 
+        rounded-sm overflow-hidden flex-1 min-w-0
+        /* Bezel effect around the individual window */
+        shadow-[inset_0_1px_3px_rgba(0,0,0,1),0_1px_0_rgba(255,255,255,0.1)]
+        border-b border-[#222]
       `}>
-        {/* CRT Scanline effect overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none z-20 opacity-40"></div>
         
-        {/* Inner Glow reflection */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none z-10"></div>
-        
+        {/* Faint Grid Texture inside the glass */}
+        <div 
+          className="absolute inset-0 opacity-10 pointer-events-none z-0"
+          style={{ backgroundImage: 'linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)', backgroundSize: '4px 4px' }}
+        ></div>
+
         {/* Text Content */}
         <div className={`
-          font-['VT323'] text-[#39ff14] tracking-widest
+          font-['VT323'] text-[#2f6] tracking-widest
           ${sizeClasses.text}
           ${glow ? 'term-glow' : 'opacity-30'}
-          z-0 flex items-baseline justify-end w-full pr-2
+          z-10 flex items-baseline justify-end w-full relative
+          filter drop-shadow(0 0 2px rgba(40,255,40,0.5))
         `}>
            {sign && (
-             <span className="mr-3 opacity-80">{sign}</span>
+             <span className="mr-3 opacity-90">{sign}</span>
            )}
            <span>
              {displayValue.split('').map((char, i) => (
                <span 
                  key={i} 
-                 className={flash && char === '_' ? 'animate-pulse' : ''}
+                 className={`${flash && char === '_' ? 'animate-pulse text-[#4f8]' : ''} relative inline-block`}
                >
+                 {/* Ghost Segment (88) behind active number for realism */}
+                 {char !== ' ' && char !== '_' && (
+                   <span className="absolute left-0 top-0 text-[#112211] -z-10 select-none blur-[0.5px]">8</span>
+                 )}
                  {char}
                </span>
              ))}

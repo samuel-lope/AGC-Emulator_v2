@@ -11,6 +11,9 @@ const App: React.FC = () => {
   const [isStartup, setIsStartup] = useState(true);
   const [showInfoModal, setShowInfoModal] = useState(false);
   
+  // Track last PROG to handle modal transitions intelligently
+  const lastProgRef = useRef<string>('');
+  
   // Estado para armazenar configurações das teclas F1-F5
   const [functionKeys, setFunctionKeys] = useState<Record<string, FunctionKeyConfig>>(() => {
     try {
@@ -82,11 +85,20 @@ const App: React.FC = () => {
     // 1. Check for 'EF' Program (Info/Credits Modal)
     try {
       const data = JSON.parse(dataString);
-      if (data.PROG === 'EF') {
+      const currentProg = data.PROG;
+
+      // Only open modal if entering EF state from a different state
+      // This prevents the modal from reopening immediately after the user closes it manually
+      if (currentProg === 'EF' && lastProgRef.current !== 'EF') {
         setShowInfoModal(true);
-      } else {
+      } 
+      // Auto-close if leaving EF state (e.g. via DSKY interaction)
+      else if (currentProg !== 'EF') {
         setShowInfoModal(false);
       }
+      
+      lastProgRef.current = currentProg;
+
     } catch (e) {
       // Ignore parsing errors
     }
@@ -101,8 +113,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setShowInfoModal(false);
+  };
+
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-[#050505] overflow-hidden relative">
+    <div className="h-screen w-screen flex items-center justify-center bg-[#020202] overflow-hidden relative">
       
       {/* Tela de Inicialização Vintage */}
       {isStartup && (
@@ -151,8 +167,17 @@ const App: React.FC = () => {
                 <p className="text-gray-500 text-xs mt-1">Mission Control Interface</p>
               </div>
               <div className="text-right">
-                <div className="text-[10px] text-gray-600 uppercase">To close interface</div>
-                <div className="text-amber-500 font-bold text-sm">PROG 00 (V37 + 00 + ENTR)</div>
+                <div className="text-[10px] text-gray-600 uppercase mb-1">Return to DSKY</div>
+                <button 
+                  onClick={handleCloseModal}
+                  className="
+                    border border-amber-600/50 text-amber-500 hover:bg-amber-600 hover:text-black 
+                    uppercase text-[10px] px-3 py-1 font-bold transition-all tracking-widest rounded-sm
+                    shadow-[0_0_10px_rgba(217,119,6,0.1)] hover:shadow-[0_0_15px_rgba(217,119,6,0.4)]
+                  "
+                >
+                  Close Interface
+                </button>
               </div>
             </div>
 
@@ -183,10 +208,10 @@ const App: React.FC = () => {
         }}
         className="flex items-center justify-center relative transition-all duration-700"
       >
-        <div className="absolute inset-0 bg-radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%) -z-10"></div>
+        <div className="absolute inset-0 bg-radial-gradient(circle, #1a1a1a 0%, #000 80%) -z-10 texture-noise opacity-50"></div>
         
         {/* DSKY Unit - Resized for horizontal proportion */}
-        <div className="w-[1024px] h-[580px] relative z-10 shadow-[0_0_150px_rgba(0,0,0,0.8)]">
+        <div className="w-[1024px] h-[580px] relative z-10 filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           <DSKY 
             ref={dskyRef}
             onSendSerial={handleDSKYUpdate} 
