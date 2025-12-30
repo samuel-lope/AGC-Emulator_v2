@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Digit16Seg from './Digit16Seg';
 
 interface DisplayProps {
   value: string;
@@ -12,81 +13,99 @@ interface DisplayProps {
 }
 
 const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label, glow = true, size = 'md', flash = false }) => {
+  // Normalize value logic
+  let displayString = value;
+  
+  // If numeric, pad with zeros or match formatting
   const isNumeric = /^\d+$/.test(value);
-  const displayValue = isNumeric 
-    ? value.padStart(length, '0').slice(-length) 
-    : value.padStart(length, ' ').slice(-length);
+  if (isNumeric) {
+    displayString = value.padStart(length, '0').slice(-length);
+  } else {
+    // For editing modes (like inputBuffer) or errors
+    displayString = value.padStart(length, ' ').slice(-length);
+  }
 
+  // Split into individual characters for component mapping
+  const chars = displayString.split('');
+
+  // Size definitions for the containers, not the text
   const sizeClasses = {
     sm: { 
-      label: 'w-8 text-[10px]', 
-      box: 'h-8 px-1', 
-      text: 'text-xl',
-      gap: 'gap-1'
+      label: 'w-8 text-[9px]', 
+      container: 'h-10 px-1 gap-[1px]', 
+      digitWidth: 'w-4',
+      signWidth: 'w-3'
     },
     md: { 
-      label: 'w-10 text-[11px]', 
-      box: 'h-16 px-3',
-      text: 'text-5xl leading-none', 
-      gap: 'gap-2'
+      label: 'w-12 text-[11px]', 
+      container: 'h-16 px-3 gap-1',
+      digitWidth: 'w-9',
+      signWidth: 'w-8'
     },
     lg: { 
-      label: 'w-10 text-[13px]', 
-      box: 'h-20 px-4',
-      text: 'text-6xl leading-none', 
-      gap: 'gap-3'
+      label: 'w-12 text-[13px]', 
+      container: 'h-20 px-4 gap-1.5',
+      digitWidth: 'w-11',
+      signWidth: 'w-10'
     }
   }[size];
 
   return (
-    <div className={`flex items-center ${sizeClasses.gap} w-full justify-end group min-w-0`}>
+    <div className="flex items-center w-full justify-end min-w-0">
+      {/* Label (PROG, NOUN, etc) */}
       {label && (
-        <span className={`${sizeClasses.label} text-[#888] font-engraved font-bold tracking-widest uppercase text-right leading-none shrink-0 text-shadow-sm`}>
+        <span className={`${sizeClasses.label} text-[#888] font-engraved font-bold tracking-widest uppercase text-right leading-none shrink-0 mr-3 text-shadow-sm`}>
           {label}
         </span>
       )}
       
-      {/* The physical display window */}
+      {/* The Physical Housing for this Register */}
       <div className={`
-        relative flex items-center justify-end bg-[#020202] ${sizeClasses.box} 
-        rounded-sm overflow-hidden flex-1 min-w-0
-        /* Bezel effect around the individual window */
-        shadow-[inset_0_1px_3px_rgba(0,0,0,1),0_1px_0_rgba(255,255,255,0.1)]
-        border-b border-[#222]
+        relative flex items-center bg-[#020202] ${sizeClasses.container}
+        rounded-sm overflow-hidden flex-shrink-0
+        shadow-[inset_0_2px_5px_rgba(0,0,0,1),0_1px_0_rgba(255,255,255,0.05)]
+        border-b border-[#1a1a1a]
+        border-t border-[#000]
       `}>
         
-        {/* Faint Grid Texture inside the glass */}
+        {/* Subtle Mesh Grid Background behind the glass */}
         <div 
-          className="absolute inset-0 opacity-10 pointer-events-none z-0"
-          style={{ backgroundImage: 'linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)', backgroundSize: '4px 4px' }}
+          className="absolute inset-0 opacity-20 pointer-events-none z-0"
+          style={{ 
+            backgroundImage: 'linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px)', 
+            backgroundSize: '4px 4px' 
+          }}
         ></div>
 
-        {/* Text Content */}
-        <div className={`
-          font-['VT323'] text-[#2f6] tracking-widest
-          ${sizeClasses.text}
-          ${glow ? 'term-glow' : 'opacity-30'}
-          z-10 flex items-baseline justify-end w-full relative
-          filter drop-shadow(0 0 2px rgba(40,255,40,0.5))
-        `}>
-           {sign && (
-             <span className="mr-3 opacity-90">{sign}</span>
-           )}
-           <span>
-             {displayValue.split('').map((char, i) => (
-               <span 
-                 key={i} 
-                 className={`${flash && char === '_' ? 'animate-pulse text-[#4f8]' : ''} relative inline-block`}
-               >
-                 {/* Ghost Segment (88) behind active number for realism */}
-                 {char !== ' ' && char !== '_' && (
-                   <span className="absolute left-0 top-0 text-[#112211] -z-10 select-none blur-[0.5px]">8</span>
-                 )}
-                 {char}
-               </span>
-             ))}
-           </span>
-        </div>
+        {/* SIGN SLOT (Only rendered if sign prop is passed) */}
+        {sign !== undefined && (
+          <div className={`relative h-[85%] ${sizeClasses.signWidth} flex items-center justify-center z-10`}>
+             <Digit16Seg char={sign} active={true} className={glow ? 'drop-shadow-[0_0_5px_rgba(50,255,50,0.5)]' : ''} />
+             
+             {/* Physical partition line between sign and numbers */}
+             <div className="absolute right-[-4px] top-1 bottom-1 w-[1px] bg-[#111]"></div>
+          </div>
+        )}
+
+        {/* DIGIT SLOTS */}
+        {chars.map((char, index) => {
+           // Determine flashing state for this specific character
+           const isFlashing = flash && (char === '_' || char === ' '); 
+           const shouldBeActive = !isFlashing;
+
+           return (
+            <div key={index} className={`relative h-[85%] ${sizeClasses.digitWidth} flex items-center justify-center z-10`}>
+              <Digit16Seg 
+                char={char} 
+                active={shouldBeActive} 
+                className={glow && shouldBeActive ? 'drop-shadow-[0_0_5px_rgba(50,255,50,0.5)]' : ''}
+              />
+            </div>
+           );
+        })}
+
+        {/* Glass Reflection Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none z-20"></div>
       </div>
     </div>
   );
