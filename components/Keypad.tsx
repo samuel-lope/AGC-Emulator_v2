@@ -12,32 +12,44 @@ const Keypad: React.FC<KeypadProps> = React.memo(({ onKeyPress, compact = false 
     ['VERB', 'NOUN', 'PROC', 'CLR', 'ENTR', 'RSET', 'LAMP', 'F1', 'F2', 'F3', 'F4', 'F5'].includes(key);
 
   const getLabelColor = (key: string) => {
-    if (isFunctional(key)) return 'text-[#d4af37]';
-    if (['+', '-'].includes(key)) return 'text-[#39ff14]';
-    return 'text-[#f0f0f0]';
+    if (isFunctional(key)) return 'text-[#fff]'; 
+    if (['+', '-'].includes(key)) return 'text-[#fff]';
+    return 'text-[#fff]';
   };
 
   return (
-    <div className={`grid grid-cols-6 gap-4 ${compact ? 'p-2' : 'p-6'} bg-[#121212] rounded-lg shadow-[inset_0_2px_10px_rgba(0,0,0,1)] border border-[#222]`}>
+    <div className={`
+      grid grid-cols-6 grid-rows-5 gap-2 
+      ${compact ? 'p-1' : 'p-2'} 
+      bg-[#121212] rounded border-2 border-[#000] 
+      shadow-[inset_0_2px_10px_rgba(0,0,0,1)] 
+      h-full w-full box-border texture-noise relative z-10
+    `}>
       {KEYPAD_LAYOUT.flat().map((key, i) => (
         key ? (
-          <button
-            key={i}
-            onClick={() => onKeyPress(key)}
-            className={`
-              dsky-button rounded-sm flex flex-col items-center justify-center font-mono font-bold
-              ${compact ? 'h-10 text-[9px]' : 'h-20 text-[18px]'}
-              ${getLabelColor(key)}
-              cursor-pointer select-none active:scale-[0.98]
-            `}
-          >
-            <span className={`${!isFunctional(key) ? 'text-2xl' : 'text-sm'} leading-tight`}>
-              {key}
-            </span>
-            {isFunctional(key) && (
-              <div className="w-1.5 h-1.5 bg-[#d4af37]/40 rounded-full mt-1.5 shadow-[0_0_5px_rgba(212,175,55,0.2)]"></div>
-            )}
-          </button>
+          <div key={i} className="key-socket h-full w-full">
+            <button
+              onClick={() => onKeyPress(key)}
+              className={`
+                dsky-button-physical w-full h-full rounded-sm flex flex-col items-center justify-center font-sans font-bold
+                ${compact ? 'text-[9px]' : 'text-xl'} 
+                ${getLabelColor(key)}
+                cursor-pointer select-none
+              `}
+            >
+              <span className={`
+                ${!isFunctional(key) ? 'text-3xl' : 'text-sm'} 
+                leading-tight tracking-wide drop-shadow-md opacity-90
+              `}>
+                {key}
+              </span>
+              
+              {/* Optional: Gold accent dot for functional keys */}
+              {isFunctional(key) && !['+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key) && (
+                 <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full mt-1.5 opacity-70 shadow-[0_0_2px_#d4af37]"></div>
+              )}
+            </button>
+          </div>
         ) : <div key={i} />
       ))}
     </div>

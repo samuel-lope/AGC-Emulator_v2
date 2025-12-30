@@ -4,12 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apollo DSKY Emulator - 16-Segment Edition</title>
+    <title>Apollo DSKY Emulator - Realism Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@600;700&family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --metal-dark: #1a1a1a;
+            --metal-light: #2a2a2a;
+            --screw-head: #111;
+        }
+
         body {
             background-color: #050505;
             color: #e0e0e0;
@@ -20,32 +26,129 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Share Tech Mono', monospace;
         }
-        .dsky-panel {
-            background: linear-gradient(145deg, #2a2a2a 0%, #151515 100%);
+
+        /* --- MATERIALS & TEXTURES --- */
+        
+        .texture-noise {
+            position: relative;
+        }
+        .texture-noise::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            pointer-events: none;
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .panel-metal {
+            background: #18181b; /* Zinc/Gunmetal base */
+            background-image: 
+                linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.1) 100%),
+                repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(0,0,0,0.2) 3px);
             box-shadow: 
-                inset 0 1px 1px rgba(255,255,255,0.1),
-                inset 0 -1px 1px rgba(0,0,0,0.5),
-                0 40px 100px rgba(0,0,0,0.9);
-            border: 1px solid #333;
+                inset 1px 1px 0px rgba(255,255,255,0.1),
+                inset -1px -1px 0px rgba(0,0,0,0.5),
+                0 10px 30px rgba(0,0,0,0.8);
         }
-        .status-light {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        /* --- HARDWARE --- */
+
+        .screw {
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle at 30% 30%, #555, #111);
+            border-radius: 50%;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.1), inset 0 1px 2px rgba(0,0,0,1);
+            position: relative;
+            z-index: 10;
         }
-        .dsky-button {
-            background: #1a1a1a;
-            border-top: 2px solid #333;
-            border-left: 2px solid #333;
-            border-bottom: 4px solid #000;
-            border-right: 4px solid #000;
-            transition: none; /* Remoção de transições suaves para parecer instantâneo/mecânico */
+        .screw::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 14px; height: 2px;
+            background: #000;
+            transform: translate(-50%, -50%) rotate(45deg);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.1);
         }
-        .dsky-button:active {
-            transform: translate(2px, 2px);
-            border-bottom-width: 1px;
-            border-right-width: 1px;
-            background: #121212;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+
+        /* --- DISPLAYS & LIGHTS --- */
+
+        .glass-panel {
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
+        }
+        .glass-panel::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(110deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .status-bulb {
+            background: #050505;
+            box-shadow: inset 0 0 5px rgba(0,0,0,1);
+            position: relative;
+        }
+        .status-bulb.active-red {
+            background: radial-gradient(circle at center, #ff8888 0%, #aa0000 60%, #440000 100%);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), inset 0 0 10px rgba(255,0,0,0.5);
+            color: #ffdada;
+            text-shadow: 0 0 4px rgba(255, 200, 200, 0.8);
+        }
+        .status-bulb.active-amber {
+            background: radial-gradient(circle at center, #ffdd88 0%, #aa6600 60%, #442200 100%);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.6), inset 0 0 10px rgba(255,100,0,0.5);
+            color: #fff8da;
+            text-shadow: 0 0 4px rgba(255, 255, 200, 0.8);
+        }
+
+        /* --- BUTTONS --- */
+
+        .key-socket {
+            background: #080808;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,0.1);
+            border-radius: 2px;
+            padding: 2px;
+        }
+
+        .dsky-button-physical {
+            background: #141414;
+            /* Top highlight, Bottom shadow for 3D block look */
+            background-image: linear-gradient(to bottom, #222, #111);
+            box-shadow: 
+                0 -1px 0 #333, /* Top edge light */
+                0 4px 0 #000,  /* Side thickness */
+                0 5px 5px rgba(0,0,0,0.5); /* Drop shadow */
+            transition: all 0.05s ease-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dsky-button-physical:active {
+            transform: translateY(3px);
+            box-shadow: 
+                0 -1px 0 #222,
+                0 1px 0 #000,
+                0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Custom Fonts */
+        .font-engraved {
+            font-family: 'Jura', sans-serif;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.1), 0 -1px 0 rgba(0,0,0,0.8);
+        }
+        
+        .term-glow {
+            text-shadow: 0 0 2px rgba(57, 255, 20, 0.4), 0 0 8px rgba(57, 255, 20, 0.2);
         }
     </style>
 <!-- <script type="importmap">

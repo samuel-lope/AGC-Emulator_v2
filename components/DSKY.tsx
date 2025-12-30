@@ -47,9 +47,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   };
 
   const handleKeyPress = (key: string) => {
-    // Logic remains unchanged...
-    console.log(`DSKY Internal: Key Pressed -> ${key}`);
-
+    // ... logic remains same ...
     if (key.startsWith('F') && key.length > 1) {
       const config = functionKeys[key];
       if (config) {
@@ -217,38 +215,63 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
   const glow = true;
 
   return (
-    <div className="dsky-panel w-full h-full p-8 rounded-xl border-4 border-[#333] flex flex-col gap-8 select-none shadow-[inset_0_2px_40px_rgba(255,255,255,0.05)] overflow-hidden">
+    <div className="relative w-full h-full p-4 select-none">
       
-      {/* Top Section: Indicators and Displays */}
-      <div className="flex gap-6 items-stretch flex-grow min-h-0">
+      {/* Outer Case (Mounting Plate) */}
+      <div className="absolute inset-0 bg-[#0f0f11] rounded-lg shadow-2xl border border-[#222]"></div>
+      
+      {/* Main Metal Faceplate */}
+      <div className="absolute inset-2 panel-metal texture-noise rounded shadow-inner flex flex-row gap-4 p-8 border-t border-white/10 border-b border-black/50">
         
-        {/* Left: Status Lights */}
-        <div className="w-[32%] flex flex-col shrink-0">
-          <StatusPanel status={displayStatus} />
-        </div>
+        {/* Screws */}
+        <div className="absolute top-3 left-3 screw"></div>
+        <div className="absolute top-3 right-3 screw"></div>
+        <div className="absolute bottom-3 left-3 screw"></div>
+        <div className="absolute bottom-3 right-3 screw"></div>
 
-        {/* Right: Displays */}
-        <div className="flex-1 flex bg-[#050505] p-3 rounded-lg border-2 border-[#1a1a1a] shadow-[inset_0_4px_30px_rgba(0,0,0,1)]">
+        {/* Left Column: Status (Top) + Displays (Bottom) - Reduced to 55% */}
+        <div className="w-[55%] flex flex-col gap-6 h-full relative z-10">
           
-          {/* PROG/VERB/NOUN Column */}
-          <div className="w-[38%] flex flex-col justify-around items-center border-r border-[#222] py-2 px-1 shrink-0">
-            <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
-            <Display label="VERB" value={verbVal} length={2} glow={glow} size="md" />
-            <Display label="NOUN" value={nounVal} length={2} glow={glow} size="md" />
+          {/* Status Panel Area */}
+          <div className="shrink-0 bg-black/40 p-1 rounded-sm border-b border-white/5 shadow-lg">
+             <StatusPanel status={displayStatus} />
           </div>
 
-          {/* Registers Column */}
-          <div className="flex-1 flex flex-col justify-around items-center py-1 pl-2">
-            <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} />
-            <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} />
-            <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} />
+          {/* Displays Area (Beveled Housing) */}
+          <div className="flex-1 flex bg-[#050505] p-6 rounded border-4 border-[#0a0a0a] shadow-[inset_0_0_20px_rgba(0,0,0,1)] gap-6 min-h-0 overflow-hidden items-center relative glass-panel">
+             
+             {/* Divider Line */}
+             <div className="absolute top-0 bottom-0 left-[38%] w-0.5 bg-[#222] opacity-50 border-l border-black border-r border-white/10"></div>
+
+             {/* Column 1: PROG / VERB / NOUN */}
+             <div className="w-[38%] flex flex-col justify-center gap-6 pr-4 shrink-0 h-full relative">
+               <div className="flex flex-col gap-1">
+                  <Display label="PROG" value={progVal} length={2} glow={glow} size="md" />
+               </div>
+               
+               <div className="flex flex-col gap-3">
+                  <Display label="VERB" value={verbVal} length={2} glow={glow} size="md" flash={mode === DSKYMode.ENTERING_VERB} />
+                  <Display label="NOUN" value={nounVal} length={2} glow={glow} size="md" flash={mode === DSKYMode.ENTERING_NOUN} />
+               </div>
+             </div>
+
+             {/* Column 2: Registers R1 / R2 / R3 */}
+             <div className="flex-1 flex flex-col justify-center gap-6 pl-4 min-w-0 h-full">
+               <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R1} />
+               <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R2} />
+               <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R3} />
+             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Section: Keypad */}
-      <div className="pt-4 border-t-2 border-[#444] shrink-0">
-        <Keypad onKeyPress={handleKeyPress} compact={false} />
+        {/* Right Column: Keypad - Increased to 45% and reduced padding */}
+        <div className="w-[45%] h-full flex flex-col justify-center relative z-10 pl-2 border-l border-white/5 shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]">
+           {/* Engraved Label - Repositioned slightly */}
+           <div className="absolute top-2 right-2 text-[#666] font-engraved text-[10px] tracking-widest opacity-50 uppercase z-0">
+              Raytheon
+           </div>
+          <Keypad onKeyPress={handleKeyPress} compact={false} />
+        </div>
       </div>
     </div>
   );
