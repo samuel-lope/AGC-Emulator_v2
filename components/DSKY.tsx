@@ -256,7 +256,7 @@ const DSKY = forwardRef<DSKYHandle, DSKYProps>(({ onSendSerial, functionKeys }, 
              </div>
 
              {/* Column 2: Registers R1 / R2 / R3 (70%) */}
-             <div className="flex-1 flex flex-col justify-center gap-6 pl-2 min-w-0 h-full">
+             <div className="flex-1 flex flex-col justify-evenly pl-2 min-w-0 h-full">
                <Display sign={displaySign(state.r1Sign)} label="R1" value={r1Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R1} />
                <Display sign={displaySign(state.r2Sign)} label="R2" value={r2Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R2} />
                <Display sign={displaySign(state.r3Sign)} label="R3" value={r3Val} length={5} size="lg" glow={glow} flash={mode === DSKYMode.ENTERING_R3} />

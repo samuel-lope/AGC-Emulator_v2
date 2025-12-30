@@ -41,15 +41,15 @@ const Display: React.FC<DisplayProps> = React.memo(({ value, length, sign, label
       // Used for PROG, VERB, NOUN
       label: 'w-10 text-[10px]', 
       container: 'h-14 px-2 gap-0.5', // Reduced from h-16
-      digitWidth: 'w-8', // Reduced from w-9
+      digitWidth: 'w-9', // Reduced from w-9
       signWidth: 'w-6'
     },
     lg: { 
       // Used for R1, R2, R3
       label: 'w-10 text-[11px]', 
-      container: 'h-16 px-2 gap-1', // Reduced from h-20, px-4
-      digitWidth: 'w-8', // Reduced from w-11
-      signWidth: 'w-7'  // Reduced from w-10
+      container: 'h-16 gap-1', // Reduced from h-20, px-4, NO HORIZONTAL PADDING
+      digitWidth: 'w-7', // Reduced from w-11
+      signWidth: 'w-6'  // Reduced from w-10
     }
   }[size];
 

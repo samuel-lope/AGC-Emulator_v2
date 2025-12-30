@@ -211,7 +211,7 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-radial-gradient(circle, #1a1a1a 0%, #000 80%) -z-10 texture-noise opacity-50"></div>
         
         {/* DSKY Unit - Resized for horizontal proportion */}
-        <div className="w-[1024px] h-[580px] relative z-10 filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        <div className="w-[1024px] h-[620px] relative z-10 filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           <DSKY 
             ref={dskyRef}
             onSendSerial={handleDSKYUpdate} 
